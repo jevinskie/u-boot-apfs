@@ -67,7 +67,7 @@ static int apple_dart_clk_init(struct udevice *dev,
 	int ret;
 
 	ret = clk_get_bulk(dev, &priv->clks);
-	if (ret == -ENOSYS)
+	if (ret == -ENOSYS || ret == -ENOENT)
 		return 0;
 	if (ret)
 		return ret;
