@@ -16,6 +16,7 @@
 #undef readl_poll_timeout
 #define readl_poll_timeout readl_poll_sleep_timeout
 
+extern phys_addr_t apple_mbox_phys_start;
 extern phys_addr_t apple_mbox_phys_addr;
 
 #define ANS_BOOT_STATUS		0x1300
@@ -78,6 +79,8 @@ static int apple_nvme_probe(struct udevice *dev)
 	ret = mbox_get_by_index(dev, 0, &priv->chan);
 	if (ret < 0)
 		return ret;
+	if (mbox_addr == 0)
+		mbox_addr = apple_mbox_phys_start;
 	mbox_size = apple_mbox_phys_addr - mbox_addr;
 
 	for (id = 0; id < 16; id++) {
