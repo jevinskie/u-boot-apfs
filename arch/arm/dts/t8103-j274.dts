@@ -17,6 +17,8 @@
 
 	aliases {
 		serial0 = &serial0;
+		ethernet0 = &eth0;
+		wifi0 = &wifi0;
 	};
 
 	chosen {
@@ -42,4 +44,18 @@
 
 &serial0 {
 	status = "okay";
+};
+
+&pci0 {
+	wifi0: network@0,0 {
+		reg = <0x10000 0x0 0x0 0x0 0x0>;
+		local-mac-address = [00 00 00 00 00 00];
+	};
+};
+
+&pci2 {
+	eth0: ethernet@0,0 {
+		reg = <0x30000 0x0 0x0 0x0 0x0>;
+		local-mac-address = [00 00 00 00 00 00];
+	};
 };
