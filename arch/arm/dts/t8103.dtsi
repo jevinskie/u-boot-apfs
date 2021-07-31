@@ -110,6 +110,8 @@
 		#size-cells = <2>;
 
 		ranges;
+		dma-ranges;
+		dma-coherent;
 		nonposted-mmio;
 
 		aic: interrupt-controller@23b100000 {
@@ -265,34 +267,28 @@
 			mboxes = <&ans_mbox 32>;
 		};
 
-		dart0: dart@681008000 {
-			compatible = "apple,dart-m1";
+		pcie0_dart_0: iommu@681008000 {
+			compatible = "apple,t8103-dart", "apple,dart-m1";
 			reg = <0x6 0x81008000 0x0 0x4000>;
-			#iommu-cells = <1>;
-			clocks = <&pcie_core_clk>;
-			sid-mask = <0xffff>;
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 696 IRQ_TYPE_LEVEL_HIGH>;
+			#iommu-cells = <1>;
 		};
 
-		dart1: dart@682008000 {
-			compatible = "apple,dart-m1";
+		pcie0_dart_1: iommu@682008000 {
+			compatible = "apple,t8103-dart", "apple,dart-m1";
 			reg = <0x6 0x82008000 0x0 0x4000>;
-			#iommu-cells = <1>;
-			clocks = <&pcie_core_clk>;
-			sid-mask = <0xffff>;
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 699 IRQ_TYPE_LEVEL_HIGH>;
+			#iommu-cells = <1>;
 		};
 
-		dart2: dart@683008000 {
-			compatible = "apple,dart-m1";
+		pcie0_dart_2: iommu@683008000 {
+			compatible = "apple,t8103-dart", "apple,dart-m1";
 			reg = <0x6 0x83008000 0x0 0x4000>;
-			#iommu-cells = <1>;
-			clocks = <&pcie_core_clk>;
-			sid-mask = <0xffff>;
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 702 IRQ_TYPE_LEVEL_HIGH>;
+			#iommu-cells = <1>;
 		};
 
 		smc_mbox: mbox@23e400000 {
@@ -365,9 +361,9 @@
 			msi-parent = <&pcie0>;
 			msi-ranges = <704 32>;
 
-			iommu-map = <0x100 &dart0 1 1>,
-				    <0x200 &dart1 1 1>,
-				    <0x300 &dart2 1 1>;
+			iommu-map = <0x100 &pcie0_dart_0 1 1>,
+				    <0x200 &pcie0_dart_1 1 1>,
+				    <0x300 &pcie0_dart_2 1 1>;
 			iommu-map-mask = <0xff00>;
 
 			bus-range = <0 3>;
@@ -420,59 +416,54 @@
 			};
 		};
 
-		atc1_common: clock@23b700448 {
-			compatible = "apple,pmgr-clk-gate";
-			reg = <0x2 0x3b700448 0x0 0x8>;
-			#clock-cells = <0>;
-			clocks = <&clk24>;
-		};
-
-		atc1_usb_aon: clock@23d280090 {
-			compatible = "apple,pmgr-clk-gate";
-			reg = <0x2 0x3d280090 0x0 0x8>;
-			#clock-cells = <0>;
-			clocks = <&atc1_common>;
-		};
-
-		atc1_usb: clock@23d2800a0 {
-			compatible = "apple,pmgr-clk-gate";
-			reg = <0x2 0x3d2800a0 0x0 0x8>;
-			#clock-cells = <0>;
-			clocks = <&atc1_usb_aon>;
-		};
-
-		usb_dart1: usb_dart1@502f00000 {
-			compatible = "apple,dart-m1";
-			reg = <0x5 0x02f00000 0x0 0x80000>,
-			      <0x5 0x02f80000 0x0 0x4000>;
+		dwc3_0_dart_0: iommu@382f00000 {
+			compatible = "apple,t8103-dart";
+			reg = <0x3 0x82f00000 0x0 0x4000>;
+			interrupt-parent = <&aic>;
+			interrupts = <AIC_IRQ 781 IRQ_TYPE_LEVEL_HIGH>;
 			#iommu-cells = <1>;
-			clocks = <&atc1_usb>;
+		};
+
+		dwc3_0_dart_1: iommu@382f80000 {
+			compatible = "apple,t8103-dart";
+			reg = <0x3 0x82f80000 0x0 0x4000>;
+			interrupt-parent = <&aic>;
+			interrupts = <AIC_IRQ 781 IRQ_TYPE_LEVEL_HIGH>;
+			#iommu-cells = <1>;
+		};
+
+		dwc3_0: usb@382280000{
+			compatible = "snps,dwc3";
+			reg = <0x3 0x82280000 0x0 0x100000>;
+			interrupt-parent = <&aic>;
+			interrupts = <AIC_IRQ 777 IRQ_TYPE_LEVEL_HIGH>;
+			dr_mode = "host";
+			iommus = <&dwc3_0_dart_0 0>, <&dwc3_0_dart_1 1>;
+		};
+
+		dwc3_1_dart_0: iommu@502f00000 {
+			compatible = "apple,t8103-dart";
+			reg = <0x5 0x02f00000 0x0 0x4000>;
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 861 IRQ_TYPE_LEVEL_HIGH>;
-			sid-mask = <11>;
-			sid-remap = <0 1>;
+			#iommu-cells = <1>;
 		};
 
-		usb_drd1: usb_drd1@502280000 {
-			compatible = "apple,dwc3-m1";
-			reg = <0x5 0x00000000 0x0 0x1000000>,
-			      <0x5 0x02000000 0x0 0x1000000>;
-			reg-names = "atcphy", "usbcore";
-			clocks = <&atc1_usb>;
-			#address-cells = <2>;
-			#size-cells = <2>;
-			ranges;
+		dwc3_1_dart_1: iommu@502f80000 {
+			compatible = "apple,t8103-dart";
+			reg = <0x5 0x02f80000 0x0 0x4000>;
+			interrupt-parent = <&aic>;
+			interrupts = <AIC_IRQ 861 IRQ_TYPE_LEVEL_HIGH>;
+			#iommu-cells = <1>;
+		};
 
-			usbdrd_dwc3_1: dwc3@502280000 {
-				compatible = "snps,dwc3";
-				reg = <0x5 0x02280000 0x0 0x100000>;
-				interrupt-parent = <&aic>;
-				interrupts = <AIC_IRQ 857 IRQ_TYPE_LEVEL_HIGH>;
-				iommus = <&usb_dart1 1>;
-				#address-cells = <1>;
-				#size-cells = <0>;
-				dr_mode = "host";
-			};
+		dwc3_1: usb@502280000{
+			compatible = "snps,dwc3";
+			reg = <0x5 0x02280000 0x0 0x100000>;
+			interrupt-parent = <&aic>;
+			interrupts = <AIC_IRQ 857 IRQ_TYPE_LEVEL_HIGH>;
+			dr_mode = "host";
+			iommus = <&dwc3_1_dart_0 0>, <&dwc3_1_dart_1 1>;
 		};
 
 		reboot@23d2b0000 {

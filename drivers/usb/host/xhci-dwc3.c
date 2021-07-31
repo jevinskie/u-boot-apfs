@@ -123,22 +123,6 @@ static int xhci_dwc3_probe(struct udevice *dev)
 	u32 reg;
 	int ret;
 
-	u32 phandle;
-	struct udevice *dart;
-
-	ret = dev_read_u32_index(dev, "iommus", 0, &phandle);
-	if (ret < 0)
-		return ret;
-
-	ret = uclass_get_device_by_phandle_id(UCLASS_MISC, phandle,
-					      &dart);
-	if (ret < 0)
-		return ret;
-
-	extern dma_addr_t apple_dart_bus_start;
-	extern phys_addr_t apple_dart_phys_start;
-	dev_set_dma_offset(dev, apple_dart_phys_start - apple_dart_bus_start);
-
 	hccr = (struct xhci_hccr *)((uintptr_t)dev_remap_addr(dev));
 	hcor = (struct xhci_hcor *)((uintptr_t)hccr +
 			HC_LENGTH(xhci_readl(&(hccr)->cr_capbase)));

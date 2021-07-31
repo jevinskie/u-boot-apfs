@@ -921,7 +921,6 @@ config ARCH_APPLE
 	select POSITION_INDEPENDENT
 	select BLK
 	select DM
-	select DM_DMA
 	select DM_GPIO
 	select DM_KEYBOARD
 	select DM_I2C
