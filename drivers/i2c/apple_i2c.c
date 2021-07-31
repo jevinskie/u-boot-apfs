@@ -207,23 +207,6 @@ static int apple_i2c_probe(struct udevice *dev)
 
 	reg_write(priv, REG_CTL, CLK_400K_DIV | CTL_MAGIC);
 
-	/* XXX hack to get the type-C port working. */
-	struct i2c_msg msg;
-	u8 cmd[6] = { 0x08, 4, 'S', 'S', 'P', 'S' };
-	u8 data[4] = { 0x09, 2, 0, 0 };
-
-	msg.addr = 0x3f;
-	msg.flags = 0;
-	msg.len = 4;
-	msg.buf = data;
-	ret = apple_i2c_xfer(dev, &msg, 1);
-
-	msg.addr = 0x3f;
-	msg.flags = 0;
-	msg.len = 6;
-	msg.buf = cmd;
-	ret = apple_i2c_xfer(dev, &msg, 1);
-
 	return 0;
 }
 
