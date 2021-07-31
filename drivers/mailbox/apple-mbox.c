@@ -30,7 +30,7 @@ struct apple_mbox_priv {
 
 phys_addr_t apple_mbox_phys_start;
 phys_addr_t apple_mbox_phys_addr;
-phys_size_t apple_mbox_size = SZ_64K;
+phys_size_t apple_mbox_size;
 
 static void apple_mbox_wait(struct apple_mbox_priv *priv)
 {
@@ -47,6 +47,19 @@ static void apple_mbox_wait(struct apple_mbox_priv *priv)
 		udelay(1);
 	if (retry == 0)
 		printf("%s: I2A timeout\n", __func__);
+}
+
+static int apple_mbox_poll(struct apple_mbox_priv *priv)
+{
+	int retry;
+
+	retry = 500000;
+	while (--retry && readl(priv->base + REG_I2A_STAT) & REG_I2A_STAT_EMPTY)
+		udelay(1);
+	if (retry == 0)
+		return -ETIMEDOUT;
+
+	return 0;
 }
 
 static int apple_mbox_send(struct mbox_chan *chan, const void *data)
@@ -126,9 +139,9 @@ static int apple_mbox_probe(struct udevice *dev)
 		return ret;
 
 	if (apple_mbox_phys_start == 0) {
-		apple_mbox_phys_start = (phys_addr_t)memalign(SZ_64K, SZ_64K);
+		apple_mbox_phys_start = (phys_addr_t)memalign(SZ_512K, SZ_64K);
 		apple_mbox_phys_addr = apple_mbox_phys_start;
-		apple_mbox_size = SZ_64K;
+		apple_mbox_size = SZ_512K;
 	}
 
 	/* EP0_IDLE */
@@ -203,43 +216,48 @@ wait_epmap:
 		writeq(0x0000000000000000, priv->base + REG_A2I_MSG1);
 	}
 
-wait_pwrok:
-	/* EP0_WAIT_PWROK (discard) */
-	apple_mbox_wait(priv);
-	msg[0] = readq(priv->base + REG_I2A_MSG0);
-	msg[1] = readq(priv->base + REG_I2A_MSG1);
+	while (apple_mbox_poll(priv) == 0) {
+		/* EP0_WAIT_PWROK */
+		apple_mbox_wait(priv);
+		msg[0] = readq(priv->base + REG_I2A_MSG0);
+		msg[1] = readq(priv->base + REG_I2A_MSG1);
 
-	endpoint = msg[1] & 0xff;
-	msgtype = (msg[0] >> 52) & 0xff;
-	if (endpoint == 1 || endpoint == 4) {
-		u64 size = (msg[0] >> 44) & 0xff;
+		endpoint = msg[1] & 0xff;
+		msgtype = (msg[0] >> 52) & 0xff;
 
-		if (apple_mbox_phys_addr + (size << 12) >
-		    apple_mbox_phys_start + apple_mbox_size) {
-			printf("%s: out of memory\n", __func__);
-			return -ENOMEM;
+		if (endpoint == 0 && msgtype == 11)
+			continue;
+
+		if (endpoint == 1 || endpoint == 2 || endpoint == 4) {
+			u64 size = (msg[0] >> 44) & 0xff;
+
+			if (apple_mbox_phys_addr + (size << 12) >
+			    apple_mbox_phys_start + apple_mbox_size) {
+				printf("%s: out of memory\n", __func__);
+				return -ENOMEM;
+			}
+
+			msg[0] &= ~0xfffffffffff;
+			msg[0] |= apple_mbox_phys_addr;
+			writeq(msg[0], priv->base + REG_A2I_MSG0);
+			writeq(msg[1], priv->base + REG_A2I_MSG1);
+			apple_mbox_phys_addr += (size << 12);
+			continue;
+		}
+		if (endpoint != 0) {
+			printf("%s: unexpected endpoint %d\n", __func__, endpoint);
+			return -EINVAL;
+		}
+		if (msgtype != 7) {
+			printf("%s: unexpected message type %d\n", __func__, msgtype);
+			return -EINVAL;
 		}
 
-		msg[0] &= ~0xfffffffffff;
-		msg[0] |= apple_mbox_phys_addr;
-		writeq(msg[0], priv->base + REG_A2I_MSG0);
-		writeq(msg[1], priv->base + REG_A2I_MSG1);
-		apple_mbox_phys_addr += (size << 12);
-		goto wait_pwrok;
+		/* EP0_SEND_PWRACK */
+		subtype = msg[0] & 0xffffffff;
+		writeq(0x00b0000000000000 | subtype , priv->base + REG_A2I_MSG0);
+		writeq(0x0000000000000000, priv->base + REG_A2I_MSG1);
 	}
-	if (endpoint != 0) {
-		printf("%s: unexpected endpoint %d\n", __func__, endpoint);
-		return -EINVAL;
-	}
-	if (msgtype != 7) {
-		printf("%s: unexpected message type %d\n", __func__, msgtype);
-		return -EINVAL;
-	}
-
-	/* EP0_SEND_PWRACK */
-	subtype = msg[0] & 0xffffffff;
-	writeq(0x00b0000000000000 | subtype , priv->base + REG_A2I_MSG0);
-	writeq(0x0000000000000000, priv->base + REG_A2I_MSG1);
 
 	return 0;
 }
