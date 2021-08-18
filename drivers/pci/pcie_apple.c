@@ -303,7 +303,7 @@ static int apple_pcie_probe(struct udevice *dev)
 	priv->base_rc = map_sysmem(addr, 0);
 
 	for (i = 0; i < NUM_PORTS; i++) {
-		addr = dev_read_addr_index(dev, 3 + i);
+		addr = dev_read_addr_index(dev, 2 + i);
 		if (addr == FDT_ADDR_T_NONE)
 			return -EINVAL;
 		priv->base_port[i] = map_sysmem(addr, 0);
