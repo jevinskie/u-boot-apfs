@@ -273,6 +273,7 @@
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 696 IRQ_TYPE_LEVEL_HIGH>;
 			#iommu-cells = <1>;
+			status = "disabled";
 		};
 
 		pcie0_dart_1: iommu@682008000 {
@@ -281,6 +282,7 @@
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 699 IRQ_TYPE_LEVEL_HIGH>;
 			#iommu-cells = <1>;
+			status = "disabled";
 		};
 
 		pcie0_dart_2: iommu@683008000 {
@@ -289,6 +291,7 @@
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 702 IRQ_TYPE_LEVEL_HIGH>;
 			#iommu-cells = <1>;
+			status = "disabled";
 		};
 
 		smc_mbox: mbox@23e400000 {
@@ -345,40 +348,7 @@
 			pinctrl-names = "default";
 
 			device_type = "pci";
-
-			pci0: pci@0,0 {
-				device_type = "pci";
-				reg = <0x0 0x0 0x0 0x0 0x0>;
-				pwren-gpios = <&smc 13 0>;
-				reset-gpios = <&pinctrl 152 0>;
-				max-link-speed = <2>;
-
-				#address-cells = <3>;
-				#size-cells = <2>;
-				ranges;
-			};
-
-			pci1: pci@1,0 {
-				device_type = "pci";
-				reg = <0x800 0x0 0x0 0x0 0x0>;
-				reset-gpios = <&pinctrl 153 0>;
-				max-link-speed = <2>;
-
-				#address-cells = <3>;
-				#size-cells = <2>;
-				ranges;
-			};
-
-			pci2: pci@2,0 {
-				device_type = "pci";
-				reg = <0x1000 0x0 0x0 0x0 0x0>;
-				reset-gpios = <&pinctrl 33 0>;
-				max-link-speed = <1>;
-
-				#address-cells = <3>;
-				#size-cells = <2>;
-				ranges;
-			};
+			status = "disabled";
 		};
 
 		dwc3_0_dart_0: iommu@382f00000 {
@@ -387,6 +357,7 @@
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 781 IRQ_TYPE_LEVEL_HIGH>;
 			#iommu-cells = <1>;
+			status = "disabled";
 		};
 
 		dwc3_0_dart_1: iommu@382f80000 {
@@ -395,6 +366,7 @@
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 781 IRQ_TYPE_LEVEL_HIGH>;
 			#iommu-cells = <1>;
+			status = "disabled";
 		};
 
 		dwc3_0: usb@382280000{
@@ -404,6 +376,7 @@
 			interrupts = <AIC_IRQ 777 IRQ_TYPE_LEVEL_HIGH>;
 			dr_mode = "host";
 			iommus = <&dwc3_0_dart_0 0>, <&dwc3_0_dart_1 1>;
+			status = "disabled";
 		};
 
 		dwc3_1_dart_0: iommu@502f00000 {
@@ -412,6 +385,7 @@
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 861 IRQ_TYPE_LEVEL_HIGH>;
 			#iommu-cells = <1>;
+			status = "disabled";
 		};
 
 		dwc3_1_dart_1: iommu@502f80000 {
@@ -420,6 +394,7 @@
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 861 IRQ_TYPE_LEVEL_HIGH>;
 			#iommu-cells = <1>;
+			status = "disabled";
 		};
 
 		dwc3_1: usb@502280000{
@@ -429,6 +404,7 @@
 			interrupts = <AIC_IRQ 857 IRQ_TYPE_LEVEL_HIGH>;
 			dr_mode = "host";
 			iommus = <&dwc3_1_dart_0 0>, <&dwc3_1_dart_1 1>;
+			status = "disabled";
 		};
 
 		reboot@23d2b0000 {
