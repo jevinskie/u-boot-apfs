@@ -256,9 +256,15 @@ static int apple_pcie_setup_port(struct apple_pcie_priv *pcie, unsigned idx)
 static int apple_pcie_setup_ports(struct apple_pcie_priv *pcie)
 {
 	unsigned port;
+	ofnode node;
 
-	for (port = 0; port < NUM_PORTS; port++)
+	node = ofnode_first_subnode(dev_ofnode(pcie->dev));
+	for (port = 0; port < NUM_PORTS; port++) {
+		if (!ofnode_valid(node))
+			break;
 		apple_pcie_setup_port(pcie, port);
+		node = ofnode_next_subnode(node);
+	}
 
 	return 0;
 }
