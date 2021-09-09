@@ -327,7 +327,7 @@
 
 			msi-controller;
 			msi-parent = <&pcie0>;
-			msi-ranges = <704 32>;
+			msi-ranges = <&aic AIC_IRQ 704 IRQ_TYPE_EDGE_RISING 32>;
 
 			iommu-map = <0x100 &pcie0_dart_0 1 1>,
 				    <0x200 &pcie0_dart_1 1 1>,
