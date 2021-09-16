@@ -514,12 +514,20 @@ efi_status_t efi_gop_register(void)
 	gopobj->info.width = col;
 	gopobj->info.height = row;
 #ifdef CONFIG_DM_VIDEO
-	if (bpix == VIDEO_BPP32 || bpix == VIDEO_BPP30)
+	if (bpix == VIDEO_BPP32)
 #else
 	if (bpix == LCD_COLOR32)
 #endif
 	{
 		gopobj->info.pixel_format = EFI_GOT_BGRA8;
+#ifdef CONFIG_DM_VIDEO
+	} else if (bpix == VIDEO_BPP30) {
+		gopobj->info.pixel_format = EFI_GOT_BITMASK;
+		gopobj->info.pixel_bitmask[0] = 0x3ff00000; /* red */
+		gopobj->info.pixel_bitmask[1] = 0x000ffc00; /* green */
+		gopobj->info.pixel_bitmask[2] = 0x000003ff; /* blue */
+		gopobj->info.pixel_bitmask[3] = 0xc0000000; /* reserved */
+#endif
 	} else {
 		gopobj->info.pixel_format = EFI_GOT_BITMASK;
 		gopobj->info.pixel_bitmask[0] = 0xf800; /* red */
