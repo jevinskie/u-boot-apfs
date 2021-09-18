@@ -56,7 +56,7 @@
 		device_type = "pci";
 		reg = <0x0 0x0 0x0 0x0 0x0>;
 		pwren-gpios = <&smc 13 0>;
-		reset-gpios = <&pinctrl 152 0>;
+		reset-gpios = <&pinctrl_ap 152 0>;
 		max-link-speed = <2>;
 
 		#address-cells = <3>;

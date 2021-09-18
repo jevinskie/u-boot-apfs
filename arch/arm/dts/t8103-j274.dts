@@ -65,7 +65,7 @@
 		device_type = "pci";
 		reg = <0x0 0x0 0x0 0x0 0x0>;
 		pwren-gpios = <&smc 13 0>;
-		reset-gpios = <&pinctrl 152 0>;
+		reset-gpios = <&pinctrl_ap 152 0>;
 		max-link-speed = <2>;
 
 		#address-cells = <3>;
@@ -76,7 +76,7 @@
 	pci1: pci@1,0 {
 		device_type = "pci";
 		reg = <0x800 0x0 0x0 0x0 0x0>;
-		reset-gpios = <&pinctrl 153 0>;
+		reset-gpios = <&pinctrl_ap 153 0>;
 		max-link-speed = <2>;
 
 		#address-cells = <3>;
@@ -87,7 +87,7 @@
 	pci2: pci@2,0 {
 		device_type = "pci";
 		reg = <0x1000 0x0 0x0 0x0 0x0>;
-		reset-gpios = <&pinctrl 33 0>;
+		reset-gpios = <&pinctrl_ap 33 0>;
 		max-link-speed = <1>;
 
 		#address-cells = <3>;
