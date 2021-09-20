@@ -4,6 +4,7 @@
  */
 
 #include <common.h>
+#include <dm.h>
 #include <efi_loader.h>
 
 #include <asm/armv8/mmu.h>
@@ -79,7 +80,8 @@ int board_init(void)
 
 int dram_init(void)
 {
-	int index, node, ret;
+	ofnode node;
+	int index, ret;
 	fdt_addr_t base;
 	fdt_size_t size;
 
@@ -87,21 +89,21 @@ int dram_init(void)
 	if (ret)
 		return ret;
 
-	/* Update RAM mapping. */
+	/* Update RAM mapping */
 	index = ARRAY_SIZE(apple_mem_map) - 3;
 	apple_mem_map[index].virt = gd->ram_base;
 	apple_mem_map[index].phys = gd->ram_base;
 	apple_mem_map[index].size = gd->ram_size;
 
-	node = fdt_path_offset(gd->fdt_blob, "/chosen/framebuffer");
-	if (node < 0)
+	node = ofnode_path("/chosen/framebuffer");
+	if (!ofnode_valid(node))
 		return 0;
 
-	base = fdtdec_get_addr_size(gd->fdt_blob, node, "reg", &size);
+	base = ofnode_get_addr_size(node, "reg", &size);
 	if (base == FDT_ADDR_T_NONE)
 		return 0;
 
-	/* Add framebuffer mapping. */
+	/* Add framebuffer mapping */
 	index = ARRAY_SIZE(apple_mem_map) - 2;
 	apple_mem_map[index].virt = base;
 	apple_mem_map[index].phys = base;
