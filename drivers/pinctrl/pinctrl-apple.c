@@ -4,7 +4,6 @@
  */
 
 #include <common.h>
-#include <clk.h>
 #include <dm.h>
 #include <dm/device-internal.h>
 #include <dm/pinctrl.h>
@@ -13,7 +12,6 @@
 #include <asm-generic/gpio.h>
 
 struct apple_pinctrl_priv {
-	struct clk_bulk clks;
 	void *base;
 	int pin_count;
 };
@@ -167,40 +165,15 @@ static int apple_pinctrl_pinmux_property_set(struct udevice *dev,
 	return ret ? ret : pin_selector;
 }
 
-static int apple_pinctrl_clk_init(struct udevice *dev,
-				  struct apple_pinctrl_priv *priv)
-{
-	int ret;
-
-	ret = clk_get_bulk(dev, &priv->clks);
-	if (ret == -ENOSYS)
-		return 0;
-	if (ret)
-		return ret;
-
-	ret = clk_enable_bulk(&priv->clks);
-	if (ret) {
-		clk_release_bulk(&priv->clks);
-		return ret;
-	}
-
-	return 0;
-}
-
 static int apple_pinctrl_probe(struct udevice *dev)
 {
 	struct apple_pinctrl_priv *priv = dev_get_priv(dev);
 	struct ofnode_phandle_args args;
 	struct udevice *child;
-	int ret;
 
 	priv->base = dev_read_addr_ptr(dev);
 	if (!priv->base)
 		return -EINVAL;
-
-	ret = apple_pinctrl_clk_init(dev, priv);
-	if (ret)
-		return ret;
 
 	if (!dev_read_phandle_with_args(dev, "gpio-ranges",
 					NULL, 3, 0, &args))

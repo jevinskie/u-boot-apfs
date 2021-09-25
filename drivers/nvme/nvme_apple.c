@@ -4,7 +4,6 @@
  */
 
 #include <common.h>
-#include <clk.h>
 #include <dm.h>
 #include <mailbox.h>
 #include <mapmem.h>
@@ -27,31 +26,10 @@ extern phys_addr_t apple_mbox_phys_addr;
 
 struct apple_nvme_priv {
 	struct nvme_dev ndev;
-	struct clk_bulk clks;
 	void *base;
 	void *sart;
 	struct mbox_chan chan;
 };
-
-static int apple_nvme_clk_init(struct udevice *dev,
-			       struct apple_nvme_priv *priv)
-{
-	int ret;
-
-	ret = clk_get_bulk(dev, &priv->clks);
-	if (ret == -ENOSYS)
-		return 0;
-	if (ret)
-		return ret;
-
-	ret = clk_enable_bulk(&priv->clks);
-	if (ret) {
-		clk_release_bulk(&priv->clks);
-		return ret;
-	}
-
-	return 0;
-}
 
 static int apple_nvme_probe(struct udevice *dev)
 {
@@ -70,10 +48,6 @@ static int apple_nvme_probe(struct udevice *dev)
 	if (addr == FDT_ADDR_T_NONE)
 		return -EINVAL;
 	priv->sart = map_sysmem(addr, 0);
-
-	ret = apple_nvme_clk_init(dev, priv);
-	if (ret)
-		return ret;
 
 	mbox_addr = apple_mbox_phys_addr;
 	ret = mbox_get_by_index(dev, 0, &priv->chan);

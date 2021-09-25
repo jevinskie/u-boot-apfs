@@ -4,9 +4,9 @@
  */
 
 #include <common.h>
-#include <clk.h>
 #include <cpu_func.h>
 #include <dm.h>
+#include <malloc.h>
 #include <mapmem.h>
 #include <asm/io.h>
 
@@ -27,7 +27,6 @@
 #define  DART_TTBR_SHIFT	12
 
 struct apple_dart_priv {
-	struct clk_bulk clks;
 	void *base;
 };
 
@@ -49,26 +48,6 @@ static void apple_dart_flush_tlb(struct apple_dart_priv *priv)
 		if ((status & DART_TLB_OP_BUSY) == 0)
 			break;
 	}
-}
-
-static int apple_dart_clk_init(struct udevice *dev,
-			       struct apple_dart_priv *priv)
-{
-	int ret;
-
-	ret = clk_get_bulk(dev, &priv->clks);
-	if (ret == -ENOSYS || ret == -ENOENT)
-		return 0;
-	if (ret)
-		return ret;
-
-	ret = clk_enable_bulk(&priv->clks);
-	if (ret) {
-		clk_release_bulk(&priv->clks);
-		return ret;
-	}
-
-	return 0;
 }
 
 static int apple_dart_bind(struct udevice *dev)
@@ -99,17 +78,12 @@ static int apple_dart_probe(struct udevice *dev)
 	phys_addr_t phys;
 	u64 *l1, *l2;
 	int sid, i, j;
-	int ret;
 
 	apple_dart_phys_start = gd->ram_top - apple_dart_size;
 
 	priv->base = dev_read_addr_ptr(dev);
 	if (!priv->base)
 		return -EINVAL;
-
-	ret = apple_dart_clk_init(dev, priv);
-	if (ret)
-		return ret;
 
 	l1 = memalign(SZ_64K, SZ_64K);
 	memset(l1, 0, SZ_64K);

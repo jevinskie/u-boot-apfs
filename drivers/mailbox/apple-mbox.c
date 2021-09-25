@@ -4,9 +4,9 @@
  */
 
 #include <common.h>
-#include <clk.h>
 #include <dm.h>
 #include <mailbox-uclass.h>
+#include <malloc.h>
 #include <asm/io.h>
 #include <linux/delay.h>
 
@@ -24,7 +24,6 @@
 #define REG_I2A_MSG1	0x8838
 
 struct apple_mbox_priv {
-	struct clk_bulk clks;
 	void *base;
 };
 
@@ -98,26 +97,6 @@ struct mbox_ops apple_mbox_ops = {
 	.recv = apple_mbox_recv,
 };
 
-static int apple_mbox_clk_init(struct udevice *dev,
-			       struct apple_mbox_priv *priv)
-{
-	int ret;
-
-	ret = clk_get_bulk(dev, &priv->clks);
-	if (ret == -ENOSYS || ret == -ENOENT)
-		return 0;
-	if (ret)
-		return ret;
-
-	ret = clk_enable_bulk(&priv->clks);
-	if (ret) {
-		clk_release_bulk(&priv->clks);
-		return ret;
-	}
-
-	return 0;
-}
-
 static int apple_mbox_probe(struct udevice *dev)
 {
 	struct apple_mbox_priv *priv = dev_get_priv(dev);
@@ -128,15 +107,11 @@ static int apple_mbox_probe(struct udevice *dev)
 	int msgtype;
 	u64 subtype;
 	u32 cpu_ctrl;
-	int i, ret;
+	int i;
 
 	priv->base = dev_read_addr_ptr(dev);
 	if (!priv->base)
 		return -EINVAL;
-
-	ret = apple_mbox_clk_init(dev, priv);
-	if (ret)
-		return ret;
 
 	if (apple_mbox_phys_start == 0) {
 		apple_mbox_phys_start = (phys_addr_t)memalign(SZ_512K, SZ_64K);

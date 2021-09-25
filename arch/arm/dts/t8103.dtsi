@@ -98,11 +98,11 @@
 			     <AIC_FIQ AIC_TMR_GUEST_VIRT IRQ_TYPE_LEVEL_HIGH>;
 	};
 
-	clk24: clock-24m {
+	clkref: clock-ref {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <24000000>;
-		clock-output-names = "clk24";
+		clock-output-names = "clkref";
 	};
 
 	soc {
@@ -115,6 +115,30 @@
 		dma-coherent;
 		nonposted-mmio;
 
+		serial0: serial@235200000 {
+			compatible = "apple,s5l-uart";
+			reg = <0x2 0x35200000 0x0 0x1000>;
+			reg-io-width = <4>;
+			interrupt-parent = <&aic>;
+			interrupts = <AIC_IRQ 605 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clkref>, <&clkref>, <&clkref>;
+			clock-names = "uart", "clk_uart_baud0", "clk_uart_baud1";
+			power-domains = <&ps_uart0>;
+			status = "disabled";
+		};
+
+		serial2: serial@235208000 {
+			compatible = "apple,s5l-uart";
+			reg = <0x2 0x35208000 0x0 0x1000>;
+			reg-io-width = <4>;
+			interrupt-parent = <&aic>;
+			interrupts = <AIC_IRQ 607 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clkref>, <&clkref>, <&clkref>;
+			clock-names = "uart", "clk_uart_baud0", "clk_uart_baud1";
+			power-domains = <&ps_uart2>;
+			status = "disabled";
+		};
+
 		aic: interrupt-controller@23b100000 {
 			compatible = "apple,t8103-aic", "apple,aic";
 			#interrupt-cells = <3>;
@@ -122,31 +146,110 @@
 			reg = <0x2 0x3b100000 0x0 0x8000>;
 		};
 
-		serial0: serial@235200000 {
-			compatible = "apple,s5l-uart";
-			reg = <0x2 0x35200000 0x0 0x1000>;
-			reg-io-width = <4>;
-			interrupt-parent = <&aic>;
-			interrupts = <AIC_IRQ 605 IRQ_TYPE_LEVEL_HIGH>;
-			/*
-			 * TODO: figure out the clocking properly, there may
-			 * be a third selectable clock.
-			 */
-			clocks = <&clk24>, <&clk24>;
-			clock-names = "uart", "clk_uart_baud0";
-			status = "disabled";
-		};
+		pmgr0_ps: power-controller@23b700000 {
+			compatible = "syscon", "simple-mfd";
+			#address-cells = <1>;
+			#size-cells = <0>;
 
-		gpio_clk: clock@23b700130 {
-			compatible = "apple,pmgr-clk-gate";
-			reg = <0x2 0x3b700130 0x0 0x8>;
-			#clock-cells = <0>;
+			reg = <0x2 0x3b700000 0x0 0x14000>;
+
+			ps_pcie_ref: power-controller@1a0 {
+				domain-output-names = "pcie_ref";
+				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				reg = <0x1a0>;
+				#power-domain-cells = <0>;
+			};
+
+			ps_imx: power-controller@1b8 {
+				domain-output-names = "imx";
+				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				reg = <0x1b8>;
+				#power-domain-cells = <0>;
+				always-on;
+			};
+
+			ps_sio: power-controller@1c0 {
+				domain-output-names = "sio";
+				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				reg = <0x1c0>;
+				#power-domain-cells = <0>;
+			};
+
+			ps_uart_p: power-controller@220 {
+				domain-output-names = "uart_p";
+				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				reg = <0x220>;
+				#power-domain-cells = <0>;
+				power-domains = <&ps_sio>;
+			};
+
+			ps_uart0: power-controller@270 {
+				domain-output-names = "uart0";
+				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				reg = <0x270>;
+				#power-domain-cells = <0>;
+				power-domains = <&ps_uart_p>;
+			};
+
+			ps_uart1: power-controller@278 {
+				domain-output-names = "uart1";
+				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				reg = <0x278>;
+				#power-domain-cells = <0>;
+				power-domains = <&ps_uart_p>;
+			};
+
+			ps_uart2: power-controller@280 {
+				domain-output-names = "uart2";
+				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				reg = <0x280>;
+				#power-domain-cells = <0>;
+				power-domains = <&ps_uart_p>;
+			};
+
+			ps_uart3: power-controller@288 {
+				domain-output-names = "uart3";
+				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				reg = <0x288>;
+				#power-domain-cells = <0>;
+				power-domains = <&ps_uart_p>;
+			};
+
+			ps_apcie: power-controller@348 {
+				domain-output-names = "apcie";
+				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				reg = <0x348>;
+				#power-domain-cells = <0>;
+				power-domains = <&ps_imx>;
+			};
+
+			ps_apcie_gp: power-controller@3e8 {
+				domain-output-names = "apcie_gp";
+				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				reg = <0x3e8>;
+				#power-domain-cells = <0>;
+				power-domains = <&ps_apcie>;
+			};
+
+			ps_ans2: power-controller@3f0 {
+				domain-output-names = "ans2";
+				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				reg = <0x3f0>;
+				#power-domain-cells = <0>;
+			};
+
+			ps_apcie_st: power-controller@418 {
+				domain-output-names = "apcie_st";
+				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				reg = <0x418>;
+				#power-domain-cells = <0>;
+				power-domains = <&ps_apcie>;
+			};
 		};
 
 		pinctrl_ap: pinctrl@23c100000 {
 			compatible = "apple,t8103-pinctrl", "apple,pinctrl";
 			reg = <0x2 0x3c100000 0x0 0x100000>;
-			clocks = <&gpio_clk>;
 
 			gpio-controller;
 			#gpio-cells = <2>;
@@ -231,33 +334,12 @@
 				     <AIC_IRQ 397 IRQ_TYPE_LEVEL_HIGH>;
 		};
 
-		sio_busif_clk: clock@23b7001c0 {
-			compatible = "apple,pmgr-clk-gate";
-			reg = <0x2 0x3b7001c0 0x0 0x8>;
-			#clock-cells = <0>;
-			clocks = <&clk24>;
-		};
-
-		sio_clk: clock@23b7001c8 {
-			compatible = "apple,pmgr-clk-gate";
-			reg = <0x2 0x3b7001c8 0x0 0x8>;
-			#clock-cells = <0>;
-			clocks = <&sio_busif_clk>;
-		};
-
-		i2c0_clk: clock@23b7001f0 {
-			compatible = "apple,pmgr-clk-gate";
-			reg = <0x2 0x3b7001f0 0x0 0x8>;
-			#clock-cells = <0>;
-			clocks = <&sio_clk>;
-		};
-
 		i2c0: i2c@20a110000 {
 			compatible = "apple,i2c-v0";
 			reg = <0x2 0x35010000 0x0 0x4000>;
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 627 IRQ_TYPE_LEVEL_HIGH>;
-			clocks = <&i2c0_clk>;
+			clocks = <&clkref>;
 			pinctrl-0 = <&i2c0_pins>;
 			pinctrl-names = "default";
 			#address-cells = <0x1>;
@@ -274,53 +356,13 @@
 			};
                 };
 
-		imx_clk: clock@23b7001b8 {
-			compatible = "apple,pmgr-clk-gate";
-			reg = <0x2 0x3b7001b8 0x0 0x8>;
-			#clock-cells = <0>;
-		};
-
-		pcie_aux_clk: clock@23b700348 {
-			compatible = "apple,pmgr-clk-gate";
-			reg = <0x2 0x3b700348 0x0 0x8>;
-			#clock-cells = <0>;
-			clocks = <&imx_clk>;
-		};
-
-		pcie_core_clk: clock@23b7003e8 {
-			compatible = "apple,pmgr-clk-gate";
-			reg = <0x2 0x3b7003e8 0x0 0x8>;
-			#clock-cells = <0>;
-			clocks = <&pcie_aux_clk>;
-		};
-
-		pcie_ref_clk: clock@23b7001a0 {
-			compatible = "apple,pmgr-clk-gate";
-			reg = <0x2 0x3b7001a0 0x0 0x8>;
-			#clock-cells = <0>;
-		};
-
-		ans_clk: clock@23b7003f0 {
-			compatible = "apple,pmgr-clk-gate";
-			reg = <0x2 0x3b7003f0 0x0 0x8>;
-			#clock-cells = <0>;
-			clocks = <&pcie_aux_clk>;
-		};
-
-		ans_st_clk: clock@23b700418 {
-			compatible = "apple,pmgr-clk-gate";
-			reg = <0x2 0x3b700418 0x0 0x8>;
-			#clock-cells = <0>;
-			clocks = <&ans_clk>;
-		};
-
 		ans_mbox: mbox@277400000 {
 			compatible = "apple,iop-mailbox-m1";
 			reg = <0x2 0x77400000 0x0 0x20000>;
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 583 IRQ_TYPE_LEVEL_HIGH>,
 				     <AIC_IRQ 586 IRQ_TYPE_LEVEL_HIGH>;
-			clocks = <&ans_st_clk>;
+			power-domains = <&ps_ans2>, <&ps_apcie_st>;
 			#mbox-cells = <1>;
 			endpoints = <32>;
 		};
@@ -331,7 +373,7 @@
 			      <0x2 0x7bc50000 0x0 0x4000>;
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 590 IRQ_TYPE_LEVEL_HIGH>;
-			clocks = <&ans_st_clk>;
+			power-domains = <&ps_apcie_st>;
 			mboxes = <&ans_mbox 32>;
 		};
 
@@ -410,8 +452,7 @@
 				 <0x02000000 0x0 0xc0000000 0x6 0xc0000000
 				  0x0 0x40000000>;
 
-			clocks = <&pcie_core_clk>, <&pcie_aux_clk>,
-				 <&pcie_ref_clk>;
+			power-domains = <&ps_apcie>, <&ps_apcie_gp>, <&ps_pcie_ref>;
 			pinctrl-0 = <&pcie_pins>;
 			pinctrl-names = "default";
 

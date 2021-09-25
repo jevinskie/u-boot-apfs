@@ -30,13 +30,6 @@ config TPL_CLK
 	  setting up clocks within TPL, and allows the same drivers to be
 	  used as U-Boot proper.
 
-config CLK_APPLE
-	bool "Clock controller driver for Apple M1"
-	depends on CLK && ARCH_APPLE
-	default y
-	help
-	  Enable this to support the clocks on Apple M1 platforms.
-
 config CLK_BCM6345
 	bool "Clock controller driver for BCM6345"
 	depends on CLK && ARCH_BMIPS

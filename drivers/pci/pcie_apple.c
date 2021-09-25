@@ -5,7 +5,6 @@
  */
 
 #include <common.h>
-#include <clk.h>
 #include <dm.h>
 #include <mapmem.h>
 #include <pci.h>
@@ -93,7 +92,6 @@ extern phys_size_t apple_dart_size;
 
 struct apple_pcie_priv {
 	struct udevice *dev;
-	struct clk_bulk clks;
 	void *base_config;
 	void *base_rc;
 	void *base_port[NUM_PORTS];
@@ -269,25 +267,6 @@ static int apple_pcie_setup_ports(struct apple_pcie_priv *pcie)
 	return 0;
 }
 
-static int apple_pcie_clk_init(struct apple_pcie_priv *priv)
-{
-	int ret;
-
-	ret = clk_get_bulk(priv->dev, &priv->clks);
-	if (ret == -ENOSYS)
-		return 0;
-	if (ret)
-		return ret;
-
-	ret = clk_enable_bulk(&priv->clks);
-	if (ret) {
-		clk_release_bulk(&priv->clks);
-		return ret;
-	}
-
-	return 0;
-}
-
 static int apple_pcie_probe(struct udevice *dev)
 {
 	struct apple_pcie_priv *priv = dev_get_priv(dev);
@@ -333,10 +312,6 @@ static int apple_pcie_probe(struct udevice *dev)
 		}
 		node = ofnode_next_subnode(node);
 	}
-
-	ret = apple_pcie_clk_init(priv);
-	if (ret)
-		return ret;
 
 	apple_pcie_setup_ports(priv);
 
