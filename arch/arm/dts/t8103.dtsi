@@ -146,103 +146,134 @@
 			reg = <0x2 0x3b100000 0x0 0x8000>;
 		};
 
-		pmgr0_ps: power-controller@23b700000 {
-			compatible = "syscon", "simple-mfd";
+		pmgr: power-controller@23b700000 {
+			compatible = "apple,t8103-pmgr", "apple,pmgr", "syscon", "simple-mfd";
 			#address-cells = <1>;
 			#size-cells = <0>;
 
 			reg = <0x2 0x3b700000 0x0 0x14000>;
 
 			ps_pcie_ref: power-controller@1a0 {
-				domain-output-names = "pcie_ref";
-				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
 				reg = <0x1a0>;
 				#power-domain-cells = <0>;
+				#reset-cells = <0>;
+				apple,domain-name = "pcie_ref";
 			};
 
 			ps_imx: power-controller@1b8 {
-				domain-output-names = "imx";
-				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
 				reg = <0x1b8>;
 				#power-domain-cells = <0>;
-				always-on;
+				#reset-cells = <0>;
+				apple,domain-name = "imx";
+				apple,always-on;
 			};
 
 			ps_sio: power-controller@1c0 {
-				domain-output-names = "sio";
-				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
 				reg = <0x1c0>;
 				#power-domain-cells = <0>;
+				#reset-cells = <0>;
+				apple,domain-name = "sio";
+			};
+
+			ps_spi_p: power-controller@218 {
+				compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
+				reg = <0x218>;
+				#power-domain-cells = <0>;
+				#reset-cells = <0>;
+				power-domains = <&ps_sio>;
+				apple,domain-name = "spi_p";
 			};
 
 			ps_uart_p: power-controller@220 {
-				domain-output-names = "uart_p";
-				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
 				reg = <0x220>;
 				#power-domain-cells = <0>;
+				#reset-cells = <0>;
 				power-domains = <&ps_sio>;
+				apple,domain-name = "uart_p";
+			};
+
+			ps_spi3: power-controller@258 {
+				compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
+				reg = <0x258>;
+				#power-domain-cells = <0>;
+				#reset-cells = <0>;
+				power-domains = <&ps_spi_p>;
+				apple,domain-name = "spi3";
 			};
 
 			ps_uart0: power-controller@270 {
-				domain-output-names = "uart0";
-				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
 				reg = <0x270>;
 				#power-domain-cells = <0>;
+				#reset-cells = <0>;
 				power-domains = <&ps_uart_p>;
+				apple,domain-name = "uart0";
 			};
 
 			ps_uart1: power-controller@278 {
-				domain-output-names = "uart1";
-				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
 				reg = <0x278>;
 				#power-domain-cells = <0>;
+				#reset-cells = <0>;
+				apple,domain-name = "uart1";
 				power-domains = <&ps_uart_p>;
 			};
 
 			ps_uart2: power-controller@280 {
-				domain-output-names = "uart2";
-				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
 				reg = <0x280>;
 				#power-domain-cells = <0>;
+				#reset-cells = <0>;
+				apple,domain-name = "uart2";
 				power-domains = <&ps_uart_p>;
 			};
 
 			ps_uart3: power-controller@288 {
-				domain-output-names = "uart3";
-				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
 				reg = <0x288>;
 				#power-domain-cells = <0>;
+				#reset-cells = <0>;
+				apple,domain-name = "uart3";
 				power-domains = <&ps_uart_p>;
 			};
 
 			ps_apcie: power-controller@348 {
-				domain-output-names = "apcie";
-				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
 				reg = <0x348>;
 				#power-domain-cells = <0>;
+				#reset-cells = <0>;
+				apple,domain-name = "apcie";
 				power-domains = <&ps_imx>;
 			};
 
 			ps_apcie_gp: power-controller@3e8 {
-				domain-output-names = "apcie_gp";
-				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
 				reg = <0x3e8>;
 				#power-domain-cells = <0>;
+				#reset-cells = <0>;
+				apple,domain-name = "apcie_gp";
 				power-domains = <&ps_apcie>;
 			};
 
 			ps_ans2: power-controller@3f0 {
-				domain-output-names = "ans2";
-				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
 				reg = <0x3f0>;
 				#power-domain-cells = <0>;
+				#reset-cells = <0>;
+				apple,domain-name = "ans2";
+				power-domains = <&ps_apcie_st>;
 			};
 
 			ps_apcie_st: power-controller@418 {
-				domain-output-names = "apcie_st";
-				compatible = "apple,t8103-pmgr-pstate", "apple,pmgr-pstate";
+				compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
 				reg = <0x418>;
 				#power-domain-cells = <0>;
+				#reset-cells = <0>;
+				apple,domain-name = "apcie_st";
 				power-domains = <&ps_apcie>;
 			};
 		};
@@ -256,6 +287,7 @@
 			gpio-ranges = <&pinctrl_ap 0 0 212>;
 
 			interrupt-controller;
+			#interrupt-cells = <2>;
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 190 IRQ_TYPE_LEVEL_HIGH>,
 				     <AIC_IRQ 191 IRQ_TYPE_LEVEL_HIGH>,
@@ -286,6 +318,7 @@
 			gpio-ranges = <&pinctrl_aop 0 0 42>;
 
 			interrupt-controller;
+			#interrupt-cells = <2>;
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 268 IRQ_TYPE_LEVEL_HIGH>,
 				     <AIC_IRQ 269 IRQ_TYPE_LEVEL_HIGH>,
@@ -305,6 +338,7 @@
 			gpio-ranges = <&pinctrl_nub 0 0 23>;
 
 			interrupt-controller;
+			#interrupt-cells = <2>;
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 330 IRQ_TYPE_LEVEL_HIGH>,
 				     <AIC_IRQ 331 IRQ_TYPE_LEVEL_HIGH>,
@@ -324,6 +358,7 @@
 			gpio-ranges = <&pinctrl_smc 0 0 16>;
 
 			interrupt-controller;
+			#interrupt-cells = <2>;
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 391 IRQ_TYPE_LEVEL_HIGH>,
 				     <AIC_IRQ 392 IRQ_TYPE_LEVEL_HIGH>,
@@ -362,7 +397,7 @@
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 583 IRQ_TYPE_LEVEL_HIGH>,
 				     <AIC_IRQ 586 IRQ_TYPE_LEVEL_HIGH>;
-			power-domains = <&ps_ans2>, <&ps_apcie_st>;
+			power-domains = <&ps_ans2>;
 			#mbox-cells = <1>;
 			endpoints = <32>;
 		};
@@ -521,15 +556,20 @@
 			reg = <0x2 0x3d2b0000 0x0 0x4000>;
 		};
 
-		spi@23510c000 {
+		spi3: spi@23510c000 {
 			compatible = "apple,t8103-spi", "apple,spi";
 			reg = <0x2 0x3510c000 0x0 0x4000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			clocks = <&clkref>;
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 617 IRQ_TYPE_LEVEL_HIGH>;
-			cs-gpios = <&pinctrl_ap 49 GPIO_ACTIVE_HIGH>;
+			power-domains = <&ps_spi3>;
+			cs-gpios = <&pinctrl_ap 49 GPIO_ACTIVE_LOW>;
+			status = "disabled";
 		};
 
-		spmi@23d0d8000 {
+		spmi@23d0d9300 {
 			compatible = "apple,t8103-spmi", "apple,spmi";
 			reg = <0x2 0x3d0d9300 0x0 0x100>;
 			interrupt-parent = <&aic>;
