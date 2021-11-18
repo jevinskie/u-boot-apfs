@@ -127,7 +127,6 @@ int video_clear(struct udevice *dev)
 				*ppix++ = priv->colour_bg;
 			break;
 		}
-	case VIDEO_BPP30:
 	case VIDEO_BPP32:
 		if (IS_ENABLED(CONFIG_VIDEO_BPP32)) {
 			u32 *ppix = priv->fb;

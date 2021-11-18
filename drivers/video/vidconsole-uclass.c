@@ -151,18 +151,16 @@ u32 vid_console_color(struct video_priv *priv, unsigned int idx)
 			       ((colors[idx].b >> 3) <<  0);
 		}
 		break;
-	case VIDEO_BPP30:
-		if (CONFIG_IS_ENABLED(VIDEO_BPP32)) {
-			return (colors[idx].r << 22) |
-			       (colors[idx].g << 12) |
-			       (colors[idx].b <<  2);
-		}
-		break;
 	case VIDEO_BPP32:
 		if (CONFIG_IS_ENABLED(VIDEO_BPP32)) {
-			return (colors[idx].r << 16) |
-			       (colors[idx].g <<  8) |
-			       (colors[idx].b <<  0);
+			if (priv->format == VIDEO_X2R10G10B10)
+				return (colors[idx].r << 22) |
+				       (colors[idx].g << 12) |
+				       (colors[idx].b <<  2);
+			else
+				return (colors[idx].r << 16) |
+				       (colors[idx].g <<  8) |
+				       (colors[idx].b <<  0);
 		}
 		break;
 	default:

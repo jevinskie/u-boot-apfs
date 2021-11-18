@@ -154,7 +154,6 @@ static int console_truetype_set_row(struct udevice *dev, uint row, int clr)
 	}
 #endif
 #ifdef CONFIG_VIDEO_BPP32
-	case VIDEO_BPP30:
 	case VIDEO_BPP32: {
 		uint32_t *dst = line;
 
@@ -302,7 +301,6 @@ static int console_truetype_putc_xy(struct udevice *dev, uint x, uint y,
 		}
 #endif
 #ifdef CONFIG_VIDEO_BPP32
-		case VIDEO_BPP30:
 		case VIDEO_BPP32: {
 			u32 *dst = (u32 *)line + xoff;
 			int i;
@@ -385,7 +383,6 @@ static int console_truetype_erase(struct udevice *dev, int xstart, int ystart,
 		}
 #endif
 #ifdef CONFIG_VIDEO_BPP32
-		case VIDEO_BPP30:
 		case VIDEO_BPP32: {
 			uint32_t *dst = line;
 

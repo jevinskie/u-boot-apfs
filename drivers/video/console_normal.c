@@ -41,7 +41,6 @@ static int console_normal_set_row(struct udevice *dev, uint row, int clr)
 			end = dst;
 			break;
 		}
-	case VIDEO_BPP30:
 	case VIDEO_BPP32:
 		if (IS_ENABLED(CONFIG_VIDEO_BPP32)) {
 			uint32_t *dst = line;
@@ -127,7 +126,6 @@ static int console_normal_putc_xy(struct udevice *dev, uint x_frac, uint y,
 				}
 				break;
 			}
-		case VIDEO_BPP30:
 		case VIDEO_BPP32:
 			if (IS_ENABLED(CONFIG_VIDEO_BPP32)) {
 				uint32_t *dst = line;
