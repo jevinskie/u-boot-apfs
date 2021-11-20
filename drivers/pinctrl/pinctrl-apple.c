@@ -10,6 +10,7 @@
 #include <dt-bindings/pinctrl/apple.h>
 #include <asm/io.h>
 #include <asm-generic/gpio.h>
+#include <linux/bitfield.h>
 
 struct apple_pinctrl_priv {
 	void *base;
@@ -17,13 +18,11 @@ struct apple_pinctrl_priv {
 };
 
 #define REG_GPIO(x)	(4 * (x))
-#define  REG_GPIO_DATA		(1 << 0)
-#define  REG_GPIO_IRQ_OUT	(1 << 1)
-#define  REG_GPIO_IRQ_MASK	(7 << 1)
-#define  REG_GPIO_PERIPH	(1 << 5)
-#define  REG_GPIO_PERIPH_SHIFT	5
-#define  REG_GPIO_CFG_DONE	(1 << 9)
-#define REG_LOCK	0xc50
+#define  REG_GPIO_DATA		BIT(0)
+#define  REG_GPIO_MODE		GENMASK(3, 1)
+#define  REG_GPIO_OUT		1
+#define  REG_GPIO_PERIPH	GENMASK(6, 5)
+#define  REG_GPIO_INPUT_ENABLE	BIT(9)
 
 static void apple_pinctrl_config_pin(struct apple_pinctrl_priv *priv,
 				     unsigned pin, u32 clr, u32 set)
@@ -33,11 +32,7 @@ static void apple_pinctrl_config_pin(struct apple_pinctrl_priv *priv,
 
 	old = readl(priv->base + REG_GPIO(pin));
 	new = (old & ~clr) | set;
-
-	if ((old & REG_GPIO_CFG_DONE) == 0)
-		writel(new, priv->base + reg);
-
-	writel(new | REG_GPIO_CFG_DONE, priv->base + reg);
+	writel(new, priv->base + reg);
 }
 
 static int apple_gpio_get_value(struct udevice *dev, unsigned offset)
@@ -60,8 +55,9 @@ static int apple_gpio_set_value(struct udevice *dev, unsigned offset,
 static int apple_gpio_get_direction(struct udevice *dev, unsigned offset)
 {
 	struct apple_pinctrl_priv *priv = dev_get_priv(dev->parent);
+	u32 reg = readl(priv->base + REG_GPIO(offset));
 
-	if (readl(priv->base + REG_GPIO(offset)) & REG_GPIO_IRQ_OUT)
+	if (FIELD_GET(REG_GPIO_MODE, reg) == REG_GPIO_OUT)
 		return GPIOF_OUTPUT;
 	else
 		return GPIOF_INPUT;
@@ -72,7 +68,8 @@ static int apple_gpio_direction_input(struct udevice *dev, unsigned offset)
 	struct apple_pinctrl_priv *priv = dev_get_priv(dev->parent);
 
 	apple_pinctrl_config_pin(priv, offset,
-				 REG_GPIO_PERIPH | REG_GPIO_IRQ_MASK, 0);
+				 REG_GPIO_PERIPH | REG_GPIO_MODE,
+				 REG_GPIO_INPUT_ENABLE);
 	return 0;
 }
 
@@ -83,8 +80,8 @@ static int apple_gpio_direction_output(struct udevice *dev, unsigned offset,
 	u32 set = (value ? REG_GPIO_DATA : 0);
 
 	apple_pinctrl_config_pin(priv, offset, REG_GPIO_DATA |
-				 REG_GPIO_PERIPH | REG_GPIO_IRQ_MASK,
-				 set | REG_GPIO_IRQ_OUT);
+				 REG_GPIO_PERIPH | REG_GPIO_MODE,
+				 set | FIELD_PREP(REG_GPIO_MODE, REG_GPIO_OUT));
 	return 0;
 }
 
@@ -149,8 +146,9 @@ static int apple_pinctrl_pinmux_set(struct udevice *dev, unsigned pin_selector,
 	struct apple_pinctrl_priv *priv = dev_get_priv(dev);
 
 	apple_pinctrl_config_pin(priv, pin_selector,
-				 REG_GPIO_DATA | REG_GPIO_IRQ_MASK,
-				 func_selector << REG_GPIO_PERIPH_SHIFT);
+				 REG_GPIO_DATA | REG_GPIO_MODE,
+				 FIELD_PREP(REG_GPIO_PERIPH, func_selector) |
+				 REG_GPIO_INPUT_ENABLE);
 	return 0;
 }
 
@@ -178,8 +176,6 @@ static int apple_pinctrl_probe(struct udevice *dev)
 	if (!dev_read_phandle_with_args(dev, "gpio-ranges",
 					NULL, 3, 0, &args))
 		priv->pin_count = args.args[2];
-
-	writel(0, priv->base + REG_LOCK);
 
 	device_bind(dev, &apple_gpio_driver, "apple_gpio", NULL,
 		    dev_ofnode(dev), &child);
