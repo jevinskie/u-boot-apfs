@@ -93,6 +93,8 @@ static int apple_nvme_probe(struct udevice *dev)
 	writel(0x102, priv->base + 0x24508);
 	writel(0x10002, priv->base + 0x24504);
 
+	strcpy(priv->ndev.vendor, "Apple");
+
 	priv->ndev.bar = priv->base;
 	return nvme_init(dev);
 }

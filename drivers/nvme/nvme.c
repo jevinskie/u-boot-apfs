@@ -761,7 +761,6 @@ static int nvme_blk_probe(struct udevice *udev)
 	struct blk_desc *desc = dev_get_uclass_plat(udev);
 	struct nvme_ns *ns = dev_get_priv(udev);
 	u8 flbas;
-	struct pci_child_plat *pplat;
 	struct nvme_id_ns *id;
 
 	id = memalign(ndev->page_size, sizeof(struct nvme_id_ns));
@@ -789,9 +788,7 @@ static int nvme_blk_probe(struct udevice *udev)
 	desc->log2blksz = ns->lba_shift;
 	desc->blksz = 1 << ns->lba_shift;
 	desc->bdev = udev;
-	pplat = dev_get_parent_plat(udev->parent);
-	if (pplat)
-		sprintf(desc->vendor, "0x%.4x", pplat->vendor);
+	memcpy(desc->vendor, ndev->vendor, sizeof(ndev->vendor));
 	memcpy(desc->product, ndev->serial, sizeof(ndev->serial));
 	memcpy(desc->revision, ndev->firmware_rev, sizeof(ndev->firmware_rev));
 
@@ -949,6 +946,10 @@ static int nvme_bind(struct udevice *udev)
 static int nvme_probe(struct udevice *udev)
 {
 	struct nvme_dev *ndev = dev_get_priv(udev);
+	struct pci_child_plat *pplat;
+
+	pplat = dev_get_parent_plat(udev);
+	sprintf(ndev->vendor, "0x%.4x", pplat->vendor);
 
 	ndev->instance = trailing_strtol(udev->name);
 	ndev->bar = dm_pci_map_bar(udev, PCI_BASE_ADDRESS_0,
