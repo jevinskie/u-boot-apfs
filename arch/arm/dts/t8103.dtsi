@@ -377,8 +377,8 @@
 				     <AIC_IRQ 397 IRQ_TYPE_LEVEL_HIGH>;
 		};
 
-		i2c0: i2c@20a110000 {
-			compatible = "apple,i2c-v0";
+		i2c0: i2c@235010000 {
+			compatible = "apple,t8103-i2c", "apple,i2c";
 			reg = <0x2 0x35010000 0x0 0x4000>;
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 627 IRQ_TYPE_LEVEL_HIGH>;
@@ -389,12 +389,12 @@
 			#size-cells = <0x0>;
 
 			hpm0: hpm@38 {
-				compatible = "ti,tps6598x";
+				compatible = "apple,cd321x";
 				reg = <0x38>;
 			};
 
 			hpm1: hpm@3f {
-				compatible = "ti,tps6598x";
+				compatible = "apple,cd321x";
 				reg = <0x3f>;
 			};
                 };
