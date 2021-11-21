@@ -10,13 +10,14 @@
 #include "nvme.h"
 
 #include <asm/io.h>
+#include <asm/arch-apple/rtkit.h>
 #include <linux/iopoll.h>
 
 #undef readl_poll_timeout
 #define readl_poll_timeout readl_poll_sleep_timeout
 
-extern phys_addr_t apple_mbox_phys_start;
-extern phys_addr_t apple_mbox_phys_addr;
+#define REG_CPU_CTRL	0x0044
+#define  REG_CPU_CTRL_RUN	BIT(4)
 
 #define ANS_BOOT_STATUS		0x1300
 #define  ANS_BOOT_STATUS_OK	0xde71ce55
@@ -27,6 +28,7 @@ extern phys_addr_t apple_mbox_phys_addr;
 struct apple_nvme_priv {
 	struct nvme_dev ndev;
 	void *base;
+	void *asc;
 	void *sart;
 	struct mbox_chan chan;
 };
@@ -34,6 +36,8 @@ struct apple_nvme_priv {
 static int apple_nvme_probe(struct udevice *dev)
 {
 	struct apple_nvme_priv *priv = dev_get_priv(dev);
+	ofnode node;
+	uint phandle;
 	fdt_addr_t addr;
 	phys_addr_t mbox_addr;
 	phys_size_t mbox_size;
@@ -47,10 +51,28 @@ static int apple_nvme_probe(struct udevice *dev)
 	addr = dev_read_addr_index(dev, 1);
 	if (addr == FDT_ADDR_T_NONE)
 		return -EINVAL;
+	priv->asc = map_sysmem(addr, 0);
+
+	phandle = dev_read_u32_default(dev, "apple,sart", 0);
+	if (!phandle)
+		return -EINVAL;
+	node = ofnode_get_by_phandle(phandle);
+	if (!ofnode_valid(node))
+		return -EINVAL;
+	ofnode_get_addr_index(node, 1);
+	if (addr == FDT_ADDR_T_NONE)
+		return -EINVAL;
 	priv->sart = map_sysmem(addr, 0);
 
-	mbox_addr = apple_mbox_phys_addr;
 	ret = mbox_get_by_index(dev, 0, &priv->chan);
+	if (ret < 0)
+		return ret;
+
+	u32 cpu_ctrl = readl(priv->asc + REG_CPU_CTRL);
+	writel(cpu_ctrl | REG_CPU_CTRL_RUN, priv->asc + REG_CPU_CTRL);
+
+	mbox_addr = apple_mbox_phys_addr;
+	ret = apple_rtkit_init(&priv->chan);
 	if (ret < 0)
 		return ret;
 	if (mbox_addr == 0)

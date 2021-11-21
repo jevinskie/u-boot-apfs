@@ -8,6 +8,7 @@
 #include <mailbox.h>
 
 #include <asm/io.h>
+#include <asm/arch-apple/rtkit.h>
 #include <asm-generic/gpio.h>
 
 #define SMC_WRITE_KEY		0x11
@@ -52,7 +53,7 @@ static int apple_smc_cmd(struct apple_smc_priv *priv, u8 cmd,
 			 u32 key, const void *ibuf, size_t ibuflen,
 			 void *obuf, size_t obuflen, u64 *omsg)
 {
-	u64 msg[2];
+	struct apple_mbox_msg msg;
 	u16 size;
 	int ret;
 
@@ -60,19 +61,19 @@ static int apple_smc_cmd(struct apple_smc_priv *priv, u8 cmd,
 		apple_smc_memcpy_toio(priv->buf, ibuf, ibuflen);
 
 	size = max_t(size_t, ibuflen, obuflen);
-	msg[0] = cmd | ((u64)key << 32) | ((u64)size << 16);
-	msg[0] |= (priv->msgid << 12);
-	msg[1] = 0;
+	msg.msg0 = cmd | ((u64)key << 32) | ((u64)size << 16);
+	msg.msg0 |= (priv->msgid << 12);
+	msg.msg1 = 32;
 	priv->msgid = (priv->msgid + 1) % NUM_MSGIDS;
 
-	ret = mbox_send(&priv->chan, msg);
+	ret = mbox_send(&priv->chan, &msg);
 	if (ret >= 0) {
-		mbox_recv(&priv->chan, msg, 250000);
+		mbox_recv(&priv->chan, &msg, 250000);
 		if (obuf && obuflen > 0)
 			apple_smc_memcpy_fromio(obuf, priv->buf, obuflen);
 		if (omsg) {
-			omsg[0] = msg[0];
-			omsg[1] = msg[1];
+			omsg[0] = msg.msg0;
+			omsg[1] = msg.msg1;
 		}
 	}
 
@@ -150,6 +151,10 @@ static int apple_smc_gpio_probe(struct udevice *dev)
 		return -EINVAL;
 
 	ret = mbox_get_by_index(dev, 0, &priv->chan);
+	if (ret < 0)
+		return ret;
+
+	ret = apple_rtkit_init(&priv->chan);
 	if (ret < 0)
 		return ret;
 
