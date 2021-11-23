@@ -210,7 +210,7 @@ static int apple_pcie_setup_port(struct apple_pcie_priv *pcie, unsigned idx)
 		return 0;
 
 	dm_gpio_set_dir_flags(&pcie->perstn[idx], GPIOD_IS_OUT);
-	dm_gpio_set_value(&pcie->perstn[idx], 0);
+	dm_gpio_set_value(&pcie->perstn[idx], 1);
 
 	rmwl(0, PORT_APPCLK_EN, pcie->base_port[idx] + PORT_APPCLK);
 
@@ -221,7 +221,7 @@ static int apple_pcie_setup_port(struct apple_pcie_priv *pcie, unsigned idx)
 	apple_pcie_port_pwren(pcie, idx);
 
 	rmwl(0, PORT_PERST_OFF, pcie->base_port[idx] + PORT_PERST);
-	dm_gpio_set_value(&pcie->perstn[idx], 1);
+	dm_gpio_set_value(&pcie->perstn[idx], 0);
 
 	res = readl_poll_timeout(pcie->base_port[idx] + PORT_STATUS, stat, (stat & PORT_STATUS_READY), 100, 250000);
 	if (res < 0) {
