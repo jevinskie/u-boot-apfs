@@ -473,7 +473,7 @@
 		smc: smc@23e050000 {
 			compatible = "apple,smc-m1";
 			reg = <0x2 0x3e050000 0x0 0x4000>,
-			      <0x2 0x23e400000 0x0 0x4000>;
+			      <0x2 0x3e400000 0x0 0x4000>;
 			reg-names = "smc", "coproc";
 			mboxes = <&smc_mbox>;
 			gpio-controller;
