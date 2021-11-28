@@ -56,7 +56,7 @@ static int apple_pmgr_on(struct power_domain *power_domain)
 
 static int apple_pmgr_off(struct power_domain *power_domain)
 {
-	return apple_pmgr_ps_set(power_domain, APPLE_PMGR_PS_PWRGATE);
+	return 0;
 }
 
 static int apple_pmgr_of_xlate(struct power_domain *power_domain,

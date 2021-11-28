@@ -122,7 +122,7 @@ static int apple_nvme_probe(struct udevice *dev)
 }
 
 static const struct udevice_id apple_nvme_ids[] = {
-	{ .compatible = "apple,nvme-m1" },
+	{ .compatible = "apple,t8103-ans-nvme" },
 	{ /* sentinel */ }
 };
 
