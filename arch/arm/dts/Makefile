@@ -29,6 +29,13 @@ dtb-$(CONFIG_EXYNOS5) += exynos5250-arndale.dtb \
 	exynos5422-odroidxu3.dtb
 dtb-$(CONFIG_EXYNOS7420) += exynos7420-espresso7420.dtb
 
+dtb-$(CONFIG_ARCH_APPLE) += \
+	t8103-j274.dtb \
+	t8103-j293.dtb \
+	t8103-j313.dtb \
+	t8103-j456.dtb \
+	t8103-j457.dtb
+
 dtb-$(CONFIG_ARCH_DAVINCI) += \
 	da850-evm.dtb \
 	da850-lcdk.dtb \
@@ -1031,8 +1038,6 @@ dtb-$(CONFIG_TARGET_TOTAL_COMPUTE) += total_compute.dtb
 dtb-$(CONFIG_TARGET_DURIAN) += phytium-durian.dtb
 
 dtb-$(CONFIG_TARGET_PRESIDIO_ASIC) += ca-presidio-engboard.dtb
-
-dtb-$(CONFIG_ARCH_APPLE) += t8103-j274.dtb t8103-j293.dtb
 
 targets += $(dtb-y)
 
