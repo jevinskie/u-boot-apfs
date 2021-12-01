@@ -72,7 +72,7 @@ static int apple_nvme_probe(struct udevice *dev)
 	writel(cpu_ctrl | REG_CPU_CTRL_RUN, priv->asc + REG_CPU_CTRL);
 
 	mbox_addr = apple_mbox_phys_addr;
-	ret = apple_rtkit_init(&priv->chan);
+	ret = apple_rtkit_init(&priv->chan, 0);
 	if (ret < 0)
 		return ret;
 	if (mbox_addr == 0)

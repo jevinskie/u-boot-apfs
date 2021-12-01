@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0+
 /*
  * (C) Copyright 2021 Mark Kettenis <kettenis@openbsd.org>
+ * (C) Copyright 2021 Copyright The Asahi Linux Contributors
  */
 
 #include <common.h>
@@ -8,19 +9,48 @@
 #include <malloc.h>
 
 #include <asm/arch-apple/rtkit.h>
+#include <linux/bitfield.h>
+
+#define APPLE_RTKIT_EP_MGMT 0
+
+#define APPLE_RTKIT_MGMT_TYPE GENMASK(59, 52)
+
+#define APPLE_RTKIT_MGMT_HELLO 1
+#define APPLE_RTKIT_MGMT_HELLO_REPLY 2
+#define APPLE_RTKIT_MGMT_HELLO_MINVER GENMASK(15, 0)
+#define APPLE_RTKIT_MGMT_HELLO_MAXVER GENMASK(31, 16)
+
+#define APPLE_RTKIT_MGMT_STARTEP 5
+#define APPLE_RTKIT_MGMT_STARTEP_EP GENMASK(39, 32)
+#define APPLE_RTKIT_MGMT_STARTEP_FLAG BIT(1)
+
+#define APPLE_RTKIT_MGMT_PWR_STATE_ACK 7
+
+#define APPLE_RTKIT_MGMT_EPMAP 8
+#define APPLE_RTKIT_MGMT_EPMAP_LAST BIT(51)
+#define APPLE_RTKIT_MGMT_EPMAP_BASE GENMASK(34, 32)
+#define APPLE_RTKIT_MGMT_EPMAP_BITMAP GENMASK(31, 0)
+
+#define APPLE_RTKIT_MGMT_EPMAP_REPLY 8
+#define APPLE_RTKIT_MGMT_EPMAP_REPLY_MORE BIT(0)
+
+#define APPLE_RTKIT_MIN_SUPPORTED_VERSION 11
+#define APPLE_RTKIT_MAX_SUPPORTED_VERSION 12
 
 phys_addr_t apple_mbox_phys_start;
 phys_addr_t apple_mbox_phys_addr;
 phys_size_t apple_mbox_size;
 
-int apple_rtkit_init(struct mbox_chan *chan)
+int apple_rtkit_init(struct mbox_chan *chan, int wakeup)
 {
 	struct apple_mbox_msg msg;
 	int endpoint;
 	int endpoints[256];
 	int nendpoints = 0;
+	int min_ver, max_ver, want_ver;
 	int msgtype;
-	u64 subtype;
+	u64 reply;
+	u32 bitmap, base;
 	int i, ret;
 
 	if (apple_mbox_phys_start == 0) {
@@ -30,69 +60,90 @@ int apple_rtkit_init(struct mbox_chan *chan)
 	}
 
 	/* EP0_IDLE */
-	msg.msg0 = 0x0060000000000220;
-	msg.msg1 = 0x00000000;
-	mbox_send(chan, &msg);
+	if (wakeup) {
+		msg.msg0 = 0x0060000000000220;
+		msg.msg1 = APPLE_RTKIT_EP_MGMT;
+		mbox_send(chan, &msg);
+	}
 
-wait_hello:
 	/* EP0_WAIT_HELLO */
 	ret = mbox_recv(chan, &msg, 10000);
 
-	endpoint = msg.msg1 & 0xff;
-	msgtype = (msg.msg0 >> 52) & 0xff;
-	if (endpoint != 0) {
+	endpoint = msg.msg1;
+	msgtype = FIELD_GET(APPLE_RTKIT_MGMT_TYPE, msg.msg0);
+	if (endpoint != APPLE_RTKIT_EP_MGMT) {
 		printf("%s: unexpected endpoint %d\n", __func__, endpoint);
 		return -EINVAL;
 	}
-	if (msgtype == 6)
-		goto wait_hello;
-	if (msgtype != 1) {
+	if (msgtype != APPLE_RTKIT_MGMT_HELLO) {
 		printf("%s: unexpected message type %d\n", __func__, msgtype);
 		return -EINVAL;
 	}
 
+	min_ver = FIELD_GET(APPLE_RTKIT_MGMT_HELLO_MINVER, msg.msg0);
+	max_ver = FIELD_GET(APPLE_RTKIT_MGMT_HELLO_MAXVER, msg.msg0);
+	want_ver = min(APPLE_RTKIT_MAX_SUPPORTED_VERSION, max_ver);
+
+	if (min_ver > APPLE_RTKIT_MAX_SUPPORTED_VERSION) {
+		printf("%s: firmware min version %d is too new\n",
+		       __func__, min_ver);
+		return -ENOTSUPP;
+	}
+
+	if (max_ver < APPLE_RTKIT_MIN_SUPPORTED_VERSION) {
+		printf("%s: firmware max version %d is too old\n",
+		       __func__, max_ver);
+		return -ENOTSUPP;
+	}
+
 	/* EP0_SEND_HELLO */
-	subtype = msg.msg0 & 0xffffffff;
-	msg.msg0 = 0x0020000100000000 | subtype;
-	msg.msg1 = 0x00000000;
+	msg.msg0 = FIELD_PREP(APPLE_RTKIT_MGMT_TYPE, APPLE_RTKIT_MGMT_HELLO_REPLY) |
+		FIELD_PREP(APPLE_RTKIT_MGMT_HELLO_MINVER, want_ver) |
+		FIELD_PREP(APPLE_RTKIT_MGMT_HELLO_MAXVER, want_ver);
+	msg.msg1 = APPLE_RTKIT_EP_MGMT;
 	mbox_send(chan, &msg);
 
 wait_epmap:
 	/* EP0_WAIT_EPMAP */
 	ret = mbox_recv(chan, &msg, 10000);
 
-	endpoint = msg.msg1 & 0xff;
-	msgtype = (msg.msg0 >> 52) & 0xff;
-	if (endpoint != 0) {
+	endpoint = msg.msg1;
+	msgtype = FIELD_GET(APPLE_RTKIT_MGMT_TYPE, msg.msg0);
+	if (endpoint != APPLE_RTKIT_EP_MGMT) {
 		printf("%s: unexpected endpoint %d\n", __func__, endpoint);
 		return -EINVAL;
 	}
-	if (msgtype != 8) {
+	if (msgtype != APPLE_RTKIT_MGMT_EPMAP) {
 		printf("%s: unexpected message type %d\n", __func__, msgtype);
 		return -EINVAL;
 	}
 
+	bitmap = FIELD_GET(APPLE_RTKIT_MGMT_EPMAP_BITMAP, msg.msg0);
+	base = FIELD_GET(APPLE_RTKIT_MGMT_EPMAP_BASE, msg.msg0);
 	for (i = 0; i < 32; i++) {
-		if (msg.msg0 & (1U << i)) {
-			endpoint = i + 32 * ((msg.msg0 >> 32) & 7);
-			endpoints[nendpoints++] = endpoint;
-		}
+		if (bitmap & (1U << i))
+			endpoints[nendpoints++] = base * 32 + i;
 	}
 
 	/* EP0_SEND_EPACK */
-	subtype = (msg.msg0 >> 32) & 0x80007;
-	msg.msg0 = 0x0080000000000000 | (subtype << 32) | !(subtype & 7);
-	msg.msg1 = 0x00000000;
+	reply = FIELD_PREP(APPLE_RTKIT_MGMT_TYPE, APPLE_RTKIT_MGMT_EPMAP_REPLY);
+	if (msg.msg0 & APPLE_RTKIT_MGMT_EPMAP_LAST)
+		reply |= APPLE_RTKIT_MGMT_EPMAP_LAST;
+	else
+		reply |= APPLE_RTKIT_MGMT_EPMAP_REPLY_MORE;
+	msg.msg0 = reply;
+	msg.msg1 = APPLE_RTKIT_EP_MGMT;
 	mbox_send(chan, &msg);
 
-	if ((subtype & 0x80000) == 0)
+	if (reply & APPLE_RTKIT_MGMT_EPMAP_REPLY_MORE)
 		goto wait_epmap;
 
 	for (i = 0; i < nendpoints; i++) {
 		/* EP0_SEND_EPSTART */
-		subtype = endpoints[i];
-		msg.msg0 = 0x0050000000000002 | (subtype << 32);
-		msg.msg1 = 0x00000000;
+		msg.msg0 = FIELD_PREP(APPLE_RTKIT_MGMT_TYPE, APPLE_RTKIT_MGMT_STARTEP) |
+			FIELD_PREP(APPLE_RTKIT_MGMT_STARTEP_EP, endpoints[i]) |
+			APPLE_RTKIT_MGMT_STARTEP_FLAG;
+		msg.msg1 = APPLE_RTKIT_EP_MGMT;
 		mbox_send(chan, &msg);
 	}
 
@@ -103,10 +154,10 @@ wait_epmap:
 		if (ret < 0)
 			return ret;
 
-		endpoint = msg.msg1 & 0xff;
-		msgtype = (msg.msg0 >> 52) & 0xff;
+		endpoint = msg.msg1;
+		msgtype = FIELD_GET(APPLE_RTKIT_MGMT_TYPE, msg.msg0);
 
-		if (endpoint == 0 && msgtype == 11)
+		if (endpoint == APPLE_RTKIT_EP_MGMT && msgtype == 11)
 			continue;
 
 		if (endpoint == 1 || endpoint == 2 || endpoint == 4) {
@@ -124,19 +175,18 @@ wait_epmap:
 			apple_mbox_phys_addr += (size << 12);
 			continue;
 		}
-		if (endpoint != 0) {
+		if (endpoint != APPLE_RTKIT_EP_MGMT) {
 			printf("%s: unexpected endpoint %d\n", __func__, endpoint);
 			return -EINVAL;
 		}
-		if (msgtype != 7) {
+		if (msgtype != APPLE_RTKIT_MGMT_PWR_STATE_ACK) {
 			printf("%s: unexpected message type %d\n", __func__, msgtype);
 			return -EINVAL;
 		}
 
 		/* EP0_SEND_PWRACK */
-		subtype = msg.msg0 & 0xffffffff;
-		msg.msg0 = 0x00b0000000000000 | subtype;
-		msg.msg1 = 0x00000000;
+		msg.msg0 = 0x00b0000000000020;
+		msg.msg1 = APPLE_RTKIT_EP_MGMT;
 		mbox_send(chan, &msg);
 	}
 

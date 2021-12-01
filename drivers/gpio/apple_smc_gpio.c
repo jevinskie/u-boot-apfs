@@ -154,7 +154,7 @@ static int apple_smc_gpio_probe(struct udevice *dev)
 	if (ret < 0)
 		return ret;
 
-	ret = apple_rtkit_init(&priv->chan);
+	ret = apple_rtkit_init(&priv->chan, 1);
 	if (ret < 0)
 		return ret;
 
