@@ -8,6 +8,10 @@
 	u-boot,dm-pre-reloc;
 };
 
+&ps_sio_busif {
+	u-boot,dm-pre-reloc;
+};
+
 &ps_sio {
 	u-boot,dm-pre-reloc;
 };
