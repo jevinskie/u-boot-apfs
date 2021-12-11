@@ -56,8 +56,8 @@
 	status = "okay";
 
 	keyboard@0 {
-		   compatible = "apple,keyboard";
-		   spi-max-frequency = <2000000>;
+		   compatible = "apple,spi-hid-transport";
+		   spi-max-frequency = <8000000>;
 		   reg = <0>;
 		   interrupts-extended = <&pinctrl_nub 13 IRQ_TYPE_LEVEL_LOW>;
 		   spien-gpios = <&pinctrl_ap 195 GPIO_ACTIVE_HIGH>;

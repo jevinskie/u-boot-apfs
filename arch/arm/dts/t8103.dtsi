@@ -104,6 +104,13 @@
 		clock-output-names = "clkref";
 	};
 
+	clk_120m: clock-120m {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <120000000>;
+		clock-output-names = "clk_120m";
+	};
+
 	soc {
 		compatible = "simple-bus";
 		#address-cells = <2>;
@@ -184,11 +191,12 @@
 			reg = <0x2 0x3510c000 0x0 0x4000>;
 			#address-cells = <1>;
 			#size-cells = <0>;
-			clocks = <&clkref>;
+			clocks = <&clk_120m>;
 			interrupt-parent = <&aic>;
 			interrupts = <AIC_IRQ 617 IRQ_TYPE_LEVEL_HIGH>;
+			pinctrl-0 = <&spi3_pins>;
+			pinctrl-names = "default";
 			power-domains = <&ps_spi3>;
-			cs-gpios = <&pinctrl_ap 49 GPIO_ACTIVE_LOW>;
 			status = "disabled";
 		};
 
@@ -285,6 +293,13 @@
 				pinmux = <APPLE_PINMUX(150, 1)>,
 					 <APPLE_PINMUX(151, 1)>,
 					 <APPLE_PINMUX(32, 1)>;
+			};
+
+			spi3_pins: spi3-pins {
+				pinmux = <APPLE_PINMUX(46, 1)>,
+					 <APPLE_PINMUX(47, 1)>,
+					 <APPLE_PINMUX(48, 1)>,
+					 <APPLE_PINMUX(49, 1)>;
 			};
 		};
 
