@@ -29,9 +29,43 @@ struct apple_nvme_priv {
 	struct nvme_dev ndev;
 	void *base;
 	void *asc;
-	void *sart;
 	struct mbox_chan chan;
+	void *sart;
+	phys_addr_t sart_addr;
+	phys_addr_t sart_size;
+	int sart_idx;
 };
+
+static int apple_nvme_sart_map(void *cookie, phys_addr_t addr,
+			       phys_size_t size)
+{
+	struct apple_nvme_priv *priv = cookie;
+	int idx;
+
+	if (priv->sart_addr + priv->sart_size == addr) {
+		addr = priv->sart_addr;
+		size = priv->sart_size + size;
+		idx = priv->sart_idx;
+	} else {
+		for (idx = priv->sart_idx; idx < 16; idx++) {
+			if ((readl(priv->sart + ANS_SART_SIZE(idx)) & 0xff000000) == 0)
+				break;
+		}
+		if (idx == 16) {
+			printf("%s: no free SART registers\n", __func__);
+			return -ENOMEM;
+		}
+	}
+
+	writel(addr >> 12, priv->sart + ANS_SART_ADDR(idx));
+	writel(0xff000000 | (size >> 12), priv->sart + ANS_SART_SIZE(idx));
+
+	priv->sart_addr = addr;
+	priv->sart_size = size;
+	priv->sart_idx = idx;
+
+	return 0;
+}
 
 static int apple_nvme_probe(struct udevice *dev)
 {
@@ -39,10 +73,8 @@ static int apple_nvme_probe(struct udevice *dev)
 	ofnode node;
 	uint phandle;
 	fdt_addr_t addr;
-	phys_addr_t mbox_addr;
-	phys_size_t mbox_size;
 	u32 stat;
-	int id, ret;
+	int ret;
 
 	priv->base = dev_read_addr_ptr(dev);
 	if (!priv->base)
@@ -71,25 +103,9 @@ static int apple_nvme_probe(struct udevice *dev)
 	u32 cpu_ctrl = readl(priv->asc + REG_CPU_CTRL);
 	writel(cpu_ctrl | REG_CPU_CTRL_RUN, priv->asc + REG_CPU_CTRL);
 
-	mbox_addr = apple_mbox_phys_addr;
-	ret = apple_rtkit_init(&priv->chan, 0);
+	ret = apple_rtkit_init(&priv->chan, 0, apple_nvme_sart_map, priv);
 	if (ret < 0)
 		return ret;
-	if (mbox_addr == 0)
-		mbox_addr = apple_mbox_phys_start;
-	mbox_size = apple_mbox_phys_addr - mbox_addr;
-
-	for (id = 0; id < 16; id++) {
-		if ((readl(priv->sart + ANS_SART_SIZE(id)) & 0xff000000) == 0)
-			break;
-	}
-	if (id == 16) {
-		printf("%s: no free SART registers\n", __func__);
-		return -ENOMEM;
-	}
-
-	writel(mbox_addr >> 12, priv->sart + ANS_SART_ADDR(id));
-	writel(0xff000000 | (mbox_size >> 12), priv->sart + ANS_SART_SIZE(id));
 
 	ret = readl_poll_timeout(priv->base + ANS_BOOT_STATUS, stat,
 				 (stat == ANS_BOOT_STATUS_OK), 100, 500000);

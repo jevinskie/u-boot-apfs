@@ -164,14 +164,14 @@ unsigned long get_uart_clk(int dev_index)
 	return 24000000;
 }
 
-__weak phys_addr_t apple_mbox_phys_start;
-__weak phys_size_t apple_mbox_size;
+__weak phys_addr_t apple_rtkit_phys_start;
+__weak phys_size_t apple_rtkit_size;
 
 int ft_board_setup(void *blob, struct bd_info *bd)
 {
-	if (apple_mbox_size > 0) {
+	if (apple_rtkit_size > 0) {
 		/* Reserve memory stolen by the mailboxes. */
-		efi_add_memory_map(apple_mbox_phys_start, apple_mbox_size,
+		efi_add_memory_map(apple_rtkit_phys_start, apple_rtkit_size,
 				   EFI_RESERVED_MEMORY_TYPE);
 	}
 

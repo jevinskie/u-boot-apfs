@@ -37,11 +37,13 @@
 #define APPLE_RTKIT_MIN_SUPPORTED_VERSION 11
 #define APPLE_RTKIT_MAX_SUPPORTED_VERSION 12
 
-phys_addr_t apple_mbox_phys_start;
-phys_addr_t apple_mbox_phys_addr;
-phys_size_t apple_mbox_size;
+phys_addr_t apple_rtkit_phys_start;
+phys_addr_t apple_rtkit_phys_addr;
+phys_size_t apple_rtkit_size;
 
-int apple_rtkit_init(struct mbox_chan *chan, int wakeup)
+int apple_rtkit_init(struct mbox_chan *chan, int wakeup,
+		     int (*sart_map)(void *, phys_addr_t, phys_size_t),
+		     void *cookie)
 {
 	struct apple_mbox_msg msg;
 	int endpoint;
@@ -53,10 +55,10 @@ int apple_rtkit_init(struct mbox_chan *chan, int wakeup)
 	u32 bitmap, base;
 	int i, ret;
 
-	if (apple_mbox_phys_start == 0) {
-		apple_mbox_phys_start = (phys_addr_t)memalign(SZ_512K, SZ_64K);
-		apple_mbox_phys_addr = apple_mbox_phys_start;
-		apple_mbox_size = SZ_512K;
+	if (apple_rtkit_phys_start == 0) {
+		apple_rtkit_phys_start = (phys_addr_t)memalign(SZ_512K, SZ_64K);
+		apple_rtkit_phys_addr = apple_rtkit_phys_start;
+		apple_rtkit_size = SZ_512K;
 	}
 
 	/* EP0_IDLE */
@@ -161,18 +163,25 @@ wait_epmap:
 			continue;
 
 		if (endpoint == 1 || endpoint == 2 || endpoint == 4) {
-			u64 size = (msg.msg0 >> 44) & 0xff;
+			u64 size = ((msg.msg0 >> 44) & 0xff) << 12;
 
-			if (apple_mbox_phys_addr + (size << 12) >
-			    apple_mbox_phys_start + apple_mbox_size) {
+			if (apple_rtkit_phys_addr + size >
+			    apple_rtkit_phys_start + apple_rtkit_size) {
 				printf("%s: out of memory\n", __func__);
 				return -ENOMEM;
 			}
 
+			if (sart_map) {
+				ret = sart_map(cookie, apple_rtkit_phys_addr,
+					       size);
+				if (ret < 0)
+					return ret;
+			}
+
 			msg.msg0 &= ~0xfffffffffff;
-			msg.msg0 |= apple_mbox_phys_addr;
+			msg.msg0 |= apple_rtkit_phys_addr;
 			mbox_send(chan, &msg);
-			apple_mbox_phys_addr += (size << 12);
+			apple_rtkit_phys_addr += size;
 			continue;
 		}
 		if (endpoint != APPLE_RTKIT_EP_MGMT) {
