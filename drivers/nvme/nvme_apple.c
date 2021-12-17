@@ -91,7 +91,7 @@ static int apple_nvme_probe(struct udevice *dev)
 	node = ofnode_get_by_phandle(phandle);
 	if (!ofnode_valid(node))
 		return -EINVAL;
-	ofnode_get_addr_index(node, 1);
+	addr = ofnode_get_addr_index(node, 0);
 	if (addr == FDT_ADDR_T_NONE)
 		return -EINVAL;
 	priv->sart = map_sysmem(addr, 0);
