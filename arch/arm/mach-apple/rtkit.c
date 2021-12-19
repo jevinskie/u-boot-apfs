@@ -50,6 +50,7 @@
 
 /* Messages for internal endpoints. */
 #define APPLE_RTKIT_BUFFER_REQUEST 1
+#define APPLE_RTKIT_BUFFER_REQUEST_SIZE GENMASK(51, 44)
 #define APPLE_RTKIT_BUFFER_REQUEST_IOVA GENMASK(41, 0)
 
 int apple_rtkit_init(struct mbox_chan *chan)
@@ -182,11 +183,13 @@ wait_epmap:
 		    endpoint == APPLE_RTKIT_EP_SYSLOG ||
 		    endpoint == APPLE_RTKIT_EP_IOREPORT) {
 			u64 addr = FIELD_GET(APPLE_RTKIT_BUFFER_REQUEST_IOVA, msg.msg0);
+			u64 size = FIELD_GET(APPLE_RTKIT_BUFFER_REQUEST_SIZE, msg.msg0);
 
 			if (msgtype == APPLE_RTKIT_BUFFER_REQUEST && addr != 0)
 				continue;
 
 			msg.msg0 = FIELD_PREP(APPLE_RTKIT_MGMT_TYPE, APPLE_RTKIT_BUFFER_REQUEST) |
+				FIELD_PREP(APPLE_RTKIT_BUFFER_REQUEST_SIZE, size) |
 				FIELD_PREP(APPLE_RTKIT_BUFFER_REQUEST_IOVA, addr);
 			msg.msg1 = endpoint;
 			ret = mbox_send(chan, &msg);
