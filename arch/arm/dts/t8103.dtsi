@@ -445,6 +445,7 @@
 			mboxes = <&ans>;
 			apple,sart = <&sart>;
 			power-domains = <&ps_ans2>;
+			resets = <&ps_ans2>;
 		};
 
 		dwc3_0: usb@382280000 {
