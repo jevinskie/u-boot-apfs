@@ -8,6 +8,7 @@
 #include <mailbox.h>
 #include <mapmem.h>
 #include "nvme.h"
+#include <reset.h>
 
 #include <asm/io.h>
 #include <asm/arch-apple/rtkit.h>
@@ -22,58 +23,19 @@
 #define ANS_BOOT_STATUS		0x1300
 #define  ANS_BOOT_STATUS_OK	0xde71ce55
 
-#define ANS_SART_SIZE(id)	(0x0000 + 4 * (id))
-#define ANS_SART_ADDR(id)	(0x0040 + 4 * (id))
-
 struct apple_nvme_priv {
 	struct nvme_dev ndev;
 	void *base;
 	void *asc;
+	struct reset_ctl_bulk resets;
 	struct mbox_chan chan;
-	void *sart;
-	phys_addr_t sart_addr;
-	phys_addr_t sart_size;
-	int sart_idx;
 };
-
-static int apple_nvme_sart_map(void *cookie, phys_addr_t addr,
-			       phys_size_t size)
-{
-	struct apple_nvme_priv *priv = cookie;
-	int idx;
-
-	if (priv->sart_addr + priv->sart_size == addr) {
-		addr = priv->sart_addr;
-		size = priv->sart_size + size;
-		idx = priv->sart_idx;
-	} else {
-		for (idx = priv->sart_idx; idx < 16; idx++) {
-			if ((readl(priv->sart + ANS_SART_SIZE(idx)) & 0xff000000) == 0)
-				break;
-		}
-		if (idx == 16) {
-			printf("%s: no free SART registers\n", __func__);
-			return -ENOMEM;
-		}
-	}
-
-	writel(addr >> 12, priv->sart + ANS_SART_ADDR(idx));
-	writel(0xff000000 | (size >> 12), priv->sart + ANS_SART_SIZE(idx));
-
-	priv->sart_addr = addr;
-	priv->sart_size = size;
-	priv->sart_idx = idx;
-
-	return 0;
-}
 
 static int apple_nvme_probe(struct udevice *dev)
 {
 	struct apple_nvme_priv *priv = dev_get_priv(dev);
-	ofnode node;
-	uint phandle;
 	fdt_addr_t addr;
-	u32 stat;
+	u32 ctrl, stat;
 	int ret;
 
 	priv->base = dev_read_addr_ptr(dev);
@@ -85,25 +47,18 @@ static int apple_nvme_probe(struct udevice *dev)
 		return -EINVAL;
 	priv->asc = map_sysmem(addr, 0);
 
-	phandle = dev_read_u32_default(dev, "apple,sart", 0);
-	if (!phandle)
-		return -EINVAL;
-	node = ofnode_get_by_phandle(phandle);
-	if (!ofnode_valid(node))
-		return -EINVAL;
-	addr = ofnode_get_addr_index(node, 0);
-	if (addr == FDT_ADDR_T_NONE)
-		return -EINVAL;
-	priv->sart = map_sysmem(addr, 0);
+	ret = reset_get_bulk(dev, &priv->resets);
+	if (ret < 0)
+		return ret;
 
 	ret = mbox_get_by_index(dev, 0, &priv->chan);
 	if (ret < 0)
 		return ret;
 
-	u32 cpu_ctrl = readl(priv->asc + REG_CPU_CTRL);
-	writel(cpu_ctrl | REG_CPU_CTRL_RUN, priv->asc + REG_CPU_CTRL);
+	ctrl = readl(priv->asc + REG_CPU_CTRL);
+	writel(ctrl | REG_CPU_CTRL_RUN, priv->asc + REG_CPU_CTRL);
 
-	ret = apple_rtkit_init(&priv->chan, 0, apple_nvme_sart_map, priv);
+	ret = apple_rtkit_init(&priv->chan);
 	if (ret < 0)
 		return ret;
 
@@ -137,6 +92,22 @@ static int apple_nvme_probe(struct udevice *dev)
 	return nvme_init(dev);
 }
 
+static int apple_nvme_remove(struct udevice *dev)
+{
+	struct apple_nvme_priv *priv = dev_get_priv(dev);
+	u32 ctrl;
+
+	apple_rtkit_shutdown(&priv->chan);
+
+	ctrl = readl(priv->asc + REG_CPU_CTRL);
+	writel(ctrl & ~REG_CPU_CTRL_RUN, priv->asc + REG_CPU_CTRL);
+
+	reset_assert_bulk(&priv->resets);
+	reset_deassert_bulk(&priv->resets);
+
+	return 0;
+}
+
 static const struct udevice_id apple_nvme_ids[] = {
 	{ .compatible = "apple,t8103-ans-nvme" },
 	{ /* sentinel */ }
@@ -148,4 +119,6 @@ U_BOOT_DRIVER(apple_nvme) = {
 	.of_match = apple_nvme_ids,
 	.priv_auto = sizeof(struct apple_nvme_priv),
 	.probe = apple_nvme_probe,
+	.remove = apple_nvme_remove,
+	.flags = DM_FLAG_OS_PREPARE,
 };

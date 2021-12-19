@@ -937,7 +937,6 @@ config ARCH_APPLE
 	select MISC
 	select OF_CONTROL
 	select OF_BOARD
-	select OF_BOARD_SETUP
 	select PCI
 	select PINCTRL
 	select USB

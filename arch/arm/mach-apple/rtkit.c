@@ -11,13 +11,19 @@
 #include <asm/arch-apple/rtkit.h>
 #include <linux/bitfield.h>
 
+#define APPLE_RTKIT_PWR_STATE_SLEEP	0x01
+#define APPLE_RTKIT_PWR_STATE_ON	0x20
+
 #define APPLE_RTKIT_EP_MGMT 0
 #define APPLE_RTKIT_EP_CRASHLOG	1
 #define APPLE_RTKIT_EP_SYSLOG 2
 #define APPLE_RTKIT_EP_DEBUG 3
 #define APPLE_RTKIT_EP_IOREPORT 4
 
+/* Messages for management endpoint. */
 #define APPLE_RTKIT_MGMT_TYPE GENMASK(59, 52)
+
+#define APPLE_RTKIT_MGMT_PWR_STATE GENMASK(15, 0)
 
 #define APPLE_RTKIT_MGMT_HELLO 1
 #define APPLE_RTKIT_MGMT_HELLO_REPLY 2
@@ -28,7 +34,8 @@
 #define APPLE_RTKIT_MGMT_STARTEP_EP GENMASK(39, 32)
 #define APPLE_RTKIT_MGMT_STARTEP_FLAG BIT(1)
 
-#define APPLE_RTKIT_MGMT_PWR_STATE_ACK 7
+#define APPLE_RTKIT_MGMT_SET_IOP_PWR_STATE 6
+#define APPLE_RTKIT_MGMT_SET_IOP_PWR_STATE_ACK 7
 
 #define APPLE_RTKIT_MGMT_EPMAP 8
 #define APPLE_RTKIT_MGMT_EPMAP_LAST BIT(51)
@@ -43,40 +50,32 @@
 
 /* Messages for internal endpoints. */
 #define APPLE_RTKIT_BUFFER_REQUEST 1
+#define APPLE_RTKIT_BUFFER_REQUEST_IOVA GENMASK(41, 0)
 
-phys_addr_t apple_rtkit_phys_start;
-phys_addr_t apple_rtkit_phys_addr;
-phys_size_t apple_rtkit_size;
-
-int apple_rtkit_init(struct mbox_chan *chan, int wakeup,
-		     int (*sart_map)(void *, phys_addr_t, phys_size_t),
-		     void *cookie)
+int apple_rtkit_init(struct mbox_chan *chan)
 {
 	struct apple_mbox_msg msg;
-	int endpoint;
 	int endpoints[256];
 	int nendpoints = 0;
+	int endpoint;
 	int min_ver, max_ver, want_ver;
-	int msgtype;
+	int msgtype, pwrstate;
 	u64 reply;
 	u32 bitmap, base;
 	int i, ret;
 
-	if (apple_rtkit_phys_start == 0) {
-		apple_rtkit_phys_start = (phys_addr_t)memalign(SZ_16K, SZ_256K);
-		apple_rtkit_phys_addr = apple_rtkit_phys_start;
-		apple_rtkit_size = SZ_256K;
-	}
+	/* Wakup the IOP. */
+	msg.msg0 = FIELD_PREP(APPLE_RTKIT_MGMT_TYPE, APPLE_RTKIT_MGMT_SET_IOP_PWR_STATE) |
+		FIELD_PREP(APPLE_RTKIT_MGMT_PWR_STATE, APPLE_RTKIT_PWR_STATE_ON);
+	msg.msg1 = APPLE_RTKIT_EP_MGMT;
+	ret = mbox_send(chan, &msg);
+	if (ret < 0)
+		return ret;
 
-	/* EP0_IDLE */
-	if (wakeup) {
-		msg.msg0 = 0x0060000000000220;
-		msg.msg1 = APPLE_RTKIT_EP_MGMT;
-		mbox_send(chan, &msg);
-	}
-
-	/* EP0_WAIT_HELLO */
+	/* Wait for protocol version negotiation message. */
 	ret = mbox_recv(chan, &msg, 10000);
+	if (ret < 0)
+		return ret;
 
 	endpoint = msg.msg1;
 	msgtype = FIELD_GET(APPLE_RTKIT_MGMT_TYPE, msg.msg0);
@@ -105,16 +104,20 @@ int apple_rtkit_init(struct mbox_chan *chan, int wakeup,
 		return -ENOTSUPP;
 	}
 
-	/* EP0_SEND_HELLO */
+	/* Ack version. */
 	msg.msg0 = FIELD_PREP(APPLE_RTKIT_MGMT_TYPE, APPLE_RTKIT_MGMT_HELLO_REPLY) |
 		FIELD_PREP(APPLE_RTKIT_MGMT_HELLO_MINVER, want_ver) |
 		FIELD_PREP(APPLE_RTKIT_MGMT_HELLO_MAXVER, want_ver);
 	msg.msg1 = APPLE_RTKIT_EP_MGMT;
-	mbox_send(chan, &msg);
+	ret = mbox_send(chan, &msg);
+	if (ret < 0)
+		return ret;
 
 wait_epmap:
-	/* EP0_WAIT_EPMAP */
+	/* Wait for endpoint map message. */
 	ret = mbox_recv(chan, &msg, 10000);
+	if (ret < 0)
+		return ret;
 
 	endpoint = msg.msg1;
 	msgtype = FIELD_GET(APPLE_RTKIT_MGMT_TYPE, msg.msg0);
@@ -134,95 +137,94 @@ wait_epmap:
 			endpoints[nendpoints++] = base * 32 + i;
 	}
 
-	/* EP0_SEND_EPACK */
-	reply = FIELD_PREP(APPLE_RTKIT_MGMT_TYPE, APPLE_RTKIT_MGMT_EPMAP_REPLY);
+	/* Ack endpoint map. */
+	reply = FIELD_PREP(APPLE_RTKIT_MGMT_TYPE, APPLE_RTKIT_MGMT_EPMAP_REPLY) |
+		FIELD_PREP(APPLE_RTKIT_MGMT_EPMAP_BASE, base);
 	if (msg.msg0 & APPLE_RTKIT_MGMT_EPMAP_LAST)
 		reply |= APPLE_RTKIT_MGMT_EPMAP_LAST;
 	else
 		reply |= APPLE_RTKIT_MGMT_EPMAP_REPLY_MORE;
 	msg.msg0 = reply;
 	msg.msg1 = APPLE_RTKIT_EP_MGMT;
-	mbox_send(chan, &msg);
+	ret = mbox_send(chan, &msg);
+	if (ret < 0)
+		return ret;
 
 	if (reply & APPLE_RTKIT_MGMT_EPMAP_REPLY_MORE)
 		goto wait_epmap;
 
 	for (i = 0; i < nendpoints; i++) {
-		/* Don't start the syslog endpoint since we can't handle
+		/* Don't start the syslog endpoint since we can't
 		   easily handle its messages in U-Boot. */
 		if (endpoints[i] == APPLE_RTKIT_EP_SYSLOG)
 			continue;
-		/* EP0_SEND_EPSTART */
+
+		/* Request endpoint. */
 		msg.msg0 = FIELD_PREP(APPLE_RTKIT_MGMT_TYPE, APPLE_RTKIT_MGMT_STARTEP) |
 			FIELD_PREP(APPLE_RTKIT_MGMT_STARTEP_EP, endpoints[i]) |
 			APPLE_RTKIT_MGMT_STARTEP_FLAG;
 		msg.msg1 = APPLE_RTKIT_EP_MGMT;
-		mbox_send(chan, &msg);
+		ret = mbox_send(chan, &msg);
+		if (ret < 0)
+			return ret;
 	}
 
-	for (;;) {
+	pwrstate = APPLE_RTKIT_PWR_STATE_SLEEP;
+	while (pwrstate != APPLE_RTKIT_PWR_STATE_ON) {
 		ret = mbox_recv(chan, &msg, 100000);
-		if (ret == -ETIMEDOUT)
-			break;
 		if (ret < 0)
 			return ret;
 
 		endpoint = msg.msg1;
 		msgtype = FIELD_GET(APPLE_RTKIT_MGMT_TYPE, msg.msg0);
 
-		if (endpoint == APPLE_RTKIT_EP_MGMT && msgtype == 11)
-			break;
-
 		if (endpoint == APPLE_RTKIT_EP_CRASHLOG ||
 		    endpoint == APPLE_RTKIT_EP_SYSLOG ||
 		    endpoint == APPLE_RTKIT_EP_IOREPORT) {
-			u64 size = ((msg.msg0 >> 44) & 0xff) << 12;
-			u64 addr = (msg.msg0 & 0xfffffffffff);
+			u64 addr = FIELD_GET(APPLE_RTKIT_BUFFER_REQUEST_IOVA, msg.msg0);
 
 			if (msgtype == APPLE_RTKIT_BUFFER_REQUEST && addr != 0)
 				continue;
 
-			if (endpoint != APPLE_RTKIT_EP_IOREPORT &&
-			    msgtype != APPLE_RTKIT_BUFFER_REQUEST)
-				continue;
-
-			size = roundup(size, SZ_16K);
-			if (addr == 0 && size > 0 && msgtype == 1) {
-				if (apple_rtkit_phys_addr + size >
-				    apple_rtkit_phys_start + apple_rtkit_size) {
-					printf("%s: out of memory\n", __func__);
-					return -ENOMEM;
-				}
-
-				addr = apple_rtkit_phys_addr;
-				apple_rtkit_phys_addr += size;
-
-				if (sart_map) {
-					ret = sart_map(cookie, addr, size);
-					if (ret < 0)
-						return ret;
-				}
-			}
-
-			msg.msg0 &= ~0xfffffffffff;
-			msg.msg0 |= addr;
-			mbox_send(chan, &msg);
+			msg.msg0 = FIELD_PREP(APPLE_RTKIT_MGMT_TYPE, APPLE_RTKIT_BUFFER_REQUEST) |
+				FIELD_PREP(APPLE_RTKIT_BUFFER_REQUEST_IOVA, addr);
+			msg.msg1 = endpoint;
+			ret = mbox_send(chan, &msg);
+			if (ret < 0)
+				return ret;
 			continue;
 		}
+
 		if (endpoint != APPLE_RTKIT_EP_MGMT) {
 			printf("%s: unexpected endpoint %d\n", __func__, endpoint);
 			return -EINVAL;
 		}
-		if (msgtype != APPLE_RTKIT_MGMT_PWR_STATE_ACK) {
+		if (msgtype != APPLE_RTKIT_MGMT_SET_IOP_PWR_STATE_ACK) {
 			printf("%s: unexpected message type %d\n", __func__, msgtype);
 			return -EINVAL;
 		}
 
-		/* EP0_SEND_PWRACK */
-		msg.msg0 = 0x00b0000000000020;
-		msg.msg1 = APPLE_RTKIT_EP_MGMT;
-		mbox_send(chan, &msg);
+		pwrstate = FIELD_GET(APPLE_RTKIT_MGMT_PWR_STATE, msg.msg0);
 	}
+
+	return 0;
+}
+
+int apple_rtkit_shutdown(struct mbox_chan *chan)
+{
+	struct apple_mbox_msg msg;
+	int ret;
+
+	msg.msg0 = FIELD_PREP(APPLE_RTKIT_MGMT_TYPE, APPLE_RTKIT_MGMT_SET_IOP_PWR_STATE) |
+		FIELD_PREP(APPLE_RTKIT_MGMT_PWR_STATE, APPLE_RTKIT_PWR_STATE_SLEEP);
+	msg.msg1 = APPLE_RTKIT_EP_MGMT;
+	ret = mbox_send(chan, &msg);
+	if (ret < 0)
+		return ret;
+
+	ret = mbox_recv(chan, &msg, 100000);
+	if (ret < 0)
+		return ret;
 
 	return 0;
 }
