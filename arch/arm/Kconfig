@@ -926,6 +926,7 @@ config ARCH_APPLE
 	select DM_I2C
 	select DM_MAILBOX
 	select DM_PCI
+	select DM_RESET
 	select DM_SERIAL
 	select DM_USB
 	select DM_VIDEO
