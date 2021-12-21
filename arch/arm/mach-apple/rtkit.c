@@ -11,9 +11,6 @@
 #include <asm/arch-apple/rtkit.h>
 #include <linux/bitfield.h>
 
-#define APPLE_RTKIT_PWR_STATE_SLEEP	0x01
-#define APPLE_RTKIT_PWR_STATE_ON	0x20
-
 #define APPLE_RTKIT_EP_MGMT 0
 #define APPLE_RTKIT_EP_CRASHLOG	1
 #define APPLE_RTKIT_EP_SYSLOG 2
@@ -213,13 +210,13 @@ wait_epmap:
 	return 0;
 }
 
-int apple_rtkit_shutdown(struct mbox_chan *chan)
+int apple_rtkit_shutdown(struct mbox_chan *chan, int pwrstate)
 {
 	struct apple_mbox_msg msg;
 	int ret;
 
 	msg.msg0 = FIELD_PREP(APPLE_RTKIT_MGMT_TYPE, APPLE_RTKIT_MGMT_SET_IOP_PWR_STATE) |
-		FIELD_PREP(APPLE_RTKIT_MGMT_PWR_STATE, APPLE_RTKIT_PWR_STATE_SLEEP);
+		FIELD_PREP(APPLE_RTKIT_MGMT_PWR_STATE, pwrstate);
 	msg.msg1 = APPLE_RTKIT_EP_MGMT;
 	ret = mbox_send(chan, &msg);
 	if (ret < 0)

@@ -173,6 +173,15 @@ static int apple_smc_gpio_probe(struct udevice *dev)
 	return 0;
 }
 
+static int apple_smc_gpio_remove(struct udevice *dev)
+{
+	struct apple_smc_priv *priv = dev_get_priv(dev);
+
+	apple_rtkit_shutdown(&priv->chan, APPLE_RTKIT_PWR_STATE_QUIESCED);
+
+	return 0;
+}
+
 static const struct udevice_id apple_smc_ids[] = {
 	{ .compatible = "apple,smc-m1" },
 	{ /* sentinel */ }
@@ -185,4 +194,6 @@ U_BOOT_DRIVER(apple_smc_gpio) = {
 	.priv_auto = sizeof(struct apple_smc_priv),
 	.ops = &apple_smc_gpio_ops,
 	.probe = apple_smc_gpio_probe,
+	.remove = apple_smc_gpio_remove,
+	.flags = DM_FLAG_OS_PREPARE,
 };

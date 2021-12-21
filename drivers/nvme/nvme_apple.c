@@ -97,7 +97,7 @@ static int apple_nvme_remove(struct udevice *dev)
 	struct apple_nvme_priv *priv = dev_get_priv(dev);
 	u32 ctrl;
 
-	apple_rtkit_shutdown(&priv->chan);
+	apple_rtkit_shutdown(&priv->chan, APPLE_RTKIT_PWR_STATE_SLEEP);
 
 	ctrl = readl(priv->asc + REG_CPU_CTRL);
 	writel(ctrl & ~REG_CPU_CTRL_RUN, priv->asc + REG_CPU_CTRL);
