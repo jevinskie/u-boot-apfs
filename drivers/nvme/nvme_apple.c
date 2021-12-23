@@ -20,8 +20,14 @@
 #define REG_CPU_CTRL	0x0044
 #define  REG_CPU_CTRL_RUN	BIT(4)
 
+#define ANS_MAX_PEND_CMDS_CTRL	0x01210
+#define  ANS_MAX_QUEUE_DEPTH	64
 #define ANS_BOOT_STATUS		0x1300
 #define  ANS_BOOT_STATUS_OK	0xde71ce55
+#define ANS_UNKNOWN_CTRL	0x24008
+#define  ANS_PRP_NULL_CHECK	(1 << 11)
+#define ANS_LINEAR_SQ_CTRL	0x24908
+#define  ANS_LINEAR_SQ_CTRL_EN	(1 << 0)
 
 struct apple_nvme_priv {
 	struct nvme_dev ndev;
@@ -69,22 +75,12 @@ static int apple_nvme_probe(struct udevice *dev)
 		return -ETIMEDOUT;
 	}
 
-	writel(((64 << 16) | 64), priv->base + 0x1210);
+	writel(ANS_LINEAR_SQ_CTRL_EN, priv->base + ANS_LINEAR_SQ_CTRL);
+	writel(((ANS_MAX_QUEUE_DEPTH << 16) | ANS_MAX_QUEUE_DEPTH),
+	       priv->base + 0x1210);
 
-	writel(readl(priv->base + 0x24004) | 0x1000, priv->base + 0x24004);
-	writel(1, priv->base + 0x24908);
-	writel(readl(priv->base + 0x24008) & ~0x800, priv->base + 0x24008);
-
-	writel(0x102, priv->base + 0x24118);
-	writel(0x102, priv->base + 0x24108);
-	writel(0x102, priv->base + 0x24420);
-	writel(0x102, priv->base + 0x24414);
-	writel(0x10002, priv->base + 0x2441c);
-	writel(0x10002, priv->base + 0x24418);
-	writel(0x10002, priv->base + 0x24144);
-	writel(0x10002, priv->base + 0x24524);
-	writel(0x102, priv->base + 0x24508);
-	writel(0x10002, priv->base + 0x24504);
+	writel(readl(priv->base + ANS_UNKNOWN_CTRL) & ~ANS_PRP_NULL_CHECK,
+	       priv->base + ANS_UNKNOWN_CTRL);
 
 	strcpy(priv->ndev.vendor, "Apple");
 
