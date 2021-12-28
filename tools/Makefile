@@ -138,6 +138,11 @@ ifdef CONFIG_FIT_SIGNATURE
 # is tricky, so manually define this options here.
 HOST_EXTRACFLAGS	+= -DCONFIG_FIT_SIGNATURE
 HOST_EXTRACFLAGS	+= -DCONFIG_FIT_SIGNATURE_MAX_SIZE=$(CONFIG_FIT_SIGNATURE_MAX_SIZE)
+HOST_EXTRACFLAGS  += \
+	$(shell pkg-config --cflags libssl libcrypto 2> /dev/null || echo "")
+HOSTLDLIBS        += \
+	$(shell pkg-config --libs libssl libcrypto 2> /dev/null || echo "-lssl -lcrypto")
+
 endif
 
 ifdef CONFIG_FIT_CIPHER
