@@ -166,7 +166,17 @@ ifdef CONFIG_TOOLS_LIBCRYPTO
 # This affects include/image.h, but including the board config file
 # is tricky, so manually define this options here.
 HOST_EXTRACFLAGS	+= -DCONFIG_FIT_SIGNATURE
-HOST_EXTRACFLAGS	+= -DCONFIG_FIT_SIGNATURE_MAX_SIZE=0xffffffff
+HOST_EXTRACFLAGS	+= -DCONFIG_FIT_SIGNATURE_MAX_SIZE=$(CONFIG_FIT_SIGNATURE_MAX_SIZE)
+HOST_EXTRACFLAGS  += \
+	$(shell pkg-config --cflags libssl libcrypto 2> /dev/null || echo "")
+HOSTLDLIBS        += \
+	$(shell pkg-config --libs libssl libcrypto 2> /dev/null || echo "-lssl -lcrypto")
+
+endif
+
+ifdef CONFIG_FIT_CIPHER
+# This affects include/image.h, but including the board config file
+# is tricky, so manually define this options here.
 HOST_EXTRACFLAGS	+= -DCONFIG_FIT_CIPHER
 endif
 
