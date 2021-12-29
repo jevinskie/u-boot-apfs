@@ -26,6 +26,7 @@ include scripts/Kbuild.include
 # include config.mk.  Some architectures expect CROSS_COMPILE to be defined
 # in arch/$(ARCH)/config.mk
 CC		= $(CROSS_COMPILE)clang
+CXX		= $(CROSS_COMPILE)clang++
 CPP		= $(CC) -E
 
 include config.mk

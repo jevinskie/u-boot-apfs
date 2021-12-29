@@ -71,6 +71,9 @@ ifeq ($(KBUILD_NOPEDANTIC),)
         ifneq ("$(save-cflags)","$(CFLAGS)")
                 $(error CFLAGS was changed in "$(kbuild-file)". Fix it to use ccflags-y)
         endif
+        ifneq ("$(save-cxxflags)","$(CXXFLAGS)")
+                $(error CXXFLAGS was changed in "$(kbuild-file)". Fix it to use cxxflags-y)
+        endif
 endif
 
 include scripts/Makefile.lib
@@ -189,11 +192,11 @@ $(obj)/%.symtypes : $(src)/%.c FORCE
 # (See cmd_cc_o_c + relevant part of rule_cc_o_c)
 
 quiet_cmd_cc_o_c = CC $(quiet_modtag)  $@
-quiet_cmd_cxx_o_cpp = CXX $(quiet_modtag)  $@
+quiet_cmd_cxx_o_cpp = CXX $(quiet_modtag) $@
 
 ifndef CONFIG_MODVERSIONS
 cmd_cc_o_c = $(CC) $(c_flags) -c -o $@ $<
-cmd_cxx_o_cpp = $(CXX) $(cxx_flags) -c -o $@ $<
+cmd_cxx_o_cpp = $(CC) $(c_flags) -c -o $@ $<
 
 else
 # When module versioning is enabled the following steps are executed:
