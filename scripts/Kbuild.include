@@ -120,6 +120,16 @@ __cc-option = $(call try-run,\
 cc-option = $(call __cc-option, $(CC),\
 	$(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS),$(1),$(2))
 
+# __cxx-option
+# Usage: MY_CXXFLAGS += $(call __cxx-option,$(CXX),$(MY_CXXFLAGS),-march=winchip-c6,-march=i586)
+__cxx-option = $(call try-run,\
+	$(1) -Werror $(2) $(3) -c -x c++ /dev/null -o "$$TMP",$(3),$(4))
+
+# cxx-option
+# Usage: cxxflags-y += $(call cxx-option,-march=winchip-c6,-march=i586)
+cxx-option = $(call __cxx-option, $(CXX),\
+	$(KBUILD_CPPFLAGS) $(KBUILD_CXXFLAGS),$(1),$(2))
+
 # hostcc-option
 # Usage: cflags-y += $(call hostcc-option,-march=winchip-c6,-march=i586)
 hostcc-option = $(call __cc-option, $(HOSTCC),\
