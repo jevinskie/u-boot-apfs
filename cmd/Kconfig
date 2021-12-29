@@ -2078,6 +2078,11 @@ config CMD_CROS_EC
 endmenu
 
 menu "Filesystem commands"
+config CMD_APFS
+	bool "apfs command support"
+	help
+	  Enables APFS FS command
+
 config CMD_BTRFS
 	bool "Enable the 'btrsubvol' command"
 	select FS_BTRFS

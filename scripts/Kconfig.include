@@ -22,6 +22,10 @@ success = $(if-success,$(1),y,n)
 # Return y if the compiler supports <flag>, n otherwise
 cc-option = $(success,$(CC) -Werror $(1) -E -x c /dev/null -o /dev/null)
 
+# $(cxx-option,<flag>)
+# Return y if the C++ compiler supports <flag>, n otherwise
+cxx-option = $(success,$(CXX) -Werror $(1) -E -x c++ /dev/null -o /dev/null)
+
 # $(ld-option,<flag>)
 # Return y if the linker supports <flag>, n otherwise
 ld-option = $(success,$(LD) -v $(1))

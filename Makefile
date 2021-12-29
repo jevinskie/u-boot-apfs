@@ -292,6 +292,7 @@ CSTD_FLAG := -std=gnu11
 ifeq ($(HOSTOS),linux)
 KBUILD_HOSTCFLAGS += $(CSTD_FLAG)
 endif
+CXXSTD_FLAG := -std=gnu++2b
 
 ifeq ($(HOSTOS),cygwin)
 KBUILD_HOSTCFLAGS	+= -ansi
@@ -395,8 +396,10 @@ LD		= $(CROSS_COMPILE)ld.bfd
 else
 LD		= $(CROSS_COMPILE)ld
 endif
-CC		= $(CROSS_COMPILE)gcc
+CC		= $(CROSS_COMPILE)clang
+CXX		= $(CROSS_COMPILE)clang++
 CPP		= $(CC) -E
+CXXPP	= $(CXX) -E
 AR		= $(CROSS_COMPILE)ar
 NM		= $(CROSS_COMPILE)nm
 LDR		= $(CROSS_COMPILE)ldr
@@ -422,6 +425,10 @@ KBUILD_CFLAGS   := -Wall -Wstrict-prototypes \
 		   -Wno-format-security \
 		   -fno-builtin -ffreestanding $(CSTD_FLAG)
 KBUILD_CFLAGS	+= -fshort-wchar -fno-strict-aliasing
+KBUILD_CXXFLAGS := -Wall -Wstrict-prototypes \
+		   -Wno-format-security \
+		   $(CXXSTD_FLAG)
+KBUILD_CXXFLAGS	+= -fshort-wchar -fno-strict-aliasing
 KBUILD_AFLAGS   := -D__ASSEMBLY__
 KBUILD_LDFLAGS  :=
 
@@ -435,9 +442,11 @@ endif
 ifneq ($(GCC_TOOLCHAIN),)
 CLANG_GCC_TC	:= --gcc-toolchain=$(GCC_TOOLCHAIN)
 endif
-KBUILD_CFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC) $(CLANG_PREFIX)
-KBUILD_AFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC) $(CLANG_PREFIX)
+# KBUILD_CFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC) $(CLANG_PREFIX)
+# KBUILD_CXXFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC) $(CLANG_PREFIX)
+# KBUILD_AFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC) $(CLANG_PREFIX)
 KBUILD_CFLAGS += $(call cc-option, -no-integrated-as)
+KBUILD_CXXFLAGS += $(call cxx-option, -no-integrated-as)
 KBUILD_AFLAGS += $(call cc-option, -no-integrated-as)
 endif
 
@@ -734,6 +743,7 @@ include scripts/Makefile.extrawarn
 KBUILD_CPPFLAGS += $(KCPPFLAGS)
 KBUILD_AFLAGS += $(KAFLAGS)
 KBUILD_CFLAGS += $(KCFLAGS)
+KBUILD_CXXFLAGS += $(KCXXFLAGS)
 
 KBUILD_HOSTCFLAGS += $(if $(CONFIG_TOOLS_DEBUG),-g)
 
@@ -756,6 +766,8 @@ NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
 cpp_flags := $(KBUILD_CPPFLAGS) $(PLATFORM_CPPFLAGS) $(UBOOTINCLUDE) \
 							$(NOSTDINC_FLAGS)
 c_flags := $(KBUILD_CFLAGS) $(cpp_flags)
+cxx_flags := $(KBUILD_CXXFLAGS) $(cpp_flags)
+
 
 #########################################################################
 # U-Boot objects....order is important (i.e. start must be first)
@@ -2230,6 +2242,10 @@ endif
 %.o: %.S prepare scripts FORCE
 	$(Q)$(MAKE) $(build)=$(build-dir) $(target-dir)$(notdir $@)
 %.symtypes: %.c prepare scripts FORCE
+	$(Q)$(MAKE) $(build)=$(build-dir) $(target-dir)$(notdir $@)
+
+# C++
+%.o: %.cpp prepare scripts FORCE
 	$(Q)$(MAKE) $(build)=$(build-dir) $(target-dir)$(notdir $@)
 
 # Modules
