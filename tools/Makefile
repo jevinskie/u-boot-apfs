@@ -230,6 +230,10 @@ HOSTCFLAGS_asn1_compiler.o = -idirafter $(srctree)/include
 mkeficapsule-objs	:= mkeficapsule.o $(LIBFDT_OBJS)
 hostprogs-$(CONFIG_EFI_HAVE_CAPSULE_SUPPORT) += mkeficapsule
 
+ifeq ($(HOSTOS),darwin)
+HOSTCFLAGS_mkeficapsule.o := -D_FORTIFY_SOURCE=0 -D'CONFIG_IS_ENABLED(c)=0'
+endif
+
 # We build some files with extra pedantic flags to try to minimize things
 # that won't build on some weird host compiler -- though there are lots of
 # exceptions for files that aren't complaint.

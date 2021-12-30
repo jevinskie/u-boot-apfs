@@ -836,7 +836,11 @@ Void_t *(*__morecore)() = __default_morecore_init;
 #else /* INTERNAL_LINUX_C_LIB */
 
 #if __STD_C
+#ifndef __APPLE__
 extern Void_t*     sbrk(ptrdiff_t);
+#else
+extern Void_t*     sbrk(int);
+#endif
 #else
 extern Void_t*     sbrk();
 #endif
