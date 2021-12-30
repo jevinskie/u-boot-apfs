@@ -63,7 +63,7 @@ include $(kbuild-file)
 # Added for U-Boot
 asflags-y  += $(PLATFORM_CPPFLAGS)
 ccflags-y  += $(PLATFORM_CPPFLAGS)
-cxxflags-y  += $(PLATFORM_CPPFLAGS)
+cxxflags-y += $(PLATFORM_CPPFLAGS)
 cppflags-y += $(PLATFORM_CPPFLAGS)
 
 # If the save-* variables changed error out

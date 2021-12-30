@@ -445,13 +445,14 @@ endif
 # KBUILD_CFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC) $(CLANG_PREFIX)
 # KBUILD_CXXFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC) $(CLANG_PREFIX)
 # KBUILD_AFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC) $(CLANG_PREFIX)
-KBUILD_CFLAGS += $(call cc-option, -no-integrated-as)
-KBUILD_CXXFLAGS += $(call cxx-option, -no-integrated-as)
-KBUILD_AFLAGS += $(call cc-option, -no-integrated-as)
+# KBUILD_CFLAGS += $(call cc-option, -no-integrated-as)
+# KBUILD_CXXFLAGS += $(call cxx-option, -no-integrated-as)
+# KBUILD_AFLAGS += $(call cc-option, -no-integrated-as)
 endif
 
 # Don't generate position independent code
 KBUILD_CFLAGS	+= $(call cc-option,-fno-PIE)
+KBUILD_CXXFLAGS	+= $(call cxx-option,-fno-PIE)
 KBUILD_AFLAGS	+= $(call cc-option,-fno-PIE)
 
 # Read UBOOTRELEASE from include/config/uboot.release (if it exists)

@@ -140,7 +140,7 @@
 	\
 	"boot_efi_binary="                                                \
 		"load ${devtype} ${devnum}:${distro_bootpart} "           \
-			"${kernel_addr_r} efi/boot/"BOOTEFI_NAME"; "      \
+			"${kernel_addr_r} efi/boot/" BOOTEFI_NAME "; "      \
 		"if fdt addr ${fdt_addr_r}; then "                        \
 			"bootefi ${kernel_addr_r} ${fdt_addr_r};"         \
 		"else "                                                   \
@@ -164,9 +164,9 @@
 		"done;"                                                   \
 		"run boot_efi_bootmgr;"                                   \
 		"if test -e ${devtype} ${devnum}:${distro_bootpart} "     \
-					"efi/boot/"BOOTEFI_NAME"; then "  \
+					"efi/boot/" BOOTEFI_NAME "; then "  \
 				"echo Found EFI removable media binary "  \
-					"efi/boot/"BOOTEFI_NAME"; "       \
+					"efi/boot/" BOOTEFI_NAME "; "       \
 				"run boot_efi_binary; "                   \
 				"echo EFI LOAD FAILED: continuing...; "   \
 		"fi; "                                                    \

@@ -4,8 +4,10 @@
  * Jevin Sweval, jevinsweval@gmail.com.
  */
 
+extern "C" {
 #include <common.h>
 #include <command.h>
+}
 
 static int do_apfs(struct cmd_tbl *cmdtp, int flag, int argc,
            char *const argv[])

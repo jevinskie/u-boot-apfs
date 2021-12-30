@@ -2,6 +2,7 @@
 # Backward compatibility
 asflags-y  += $(EXTRA_AFLAGS)
 ccflags-y  += $(EXTRA_CFLAGS)
+cxxflags-y += $(EXTRA_CXXFLAGS)
 cppflags-y += $(EXTRA_CPPFLAGS)
 ldflags-y  += $(EXTRA_LDFLAGS)
 
@@ -9,6 +10,7 @@ ldflags-y  += $(EXTRA_LDFLAGS)
 # flags that take effect in sub directories
 export KBUILD_SUBDIR_ASFLAGS := $(KBUILD_SUBDIR_ASFLAGS) $(subdir-asflags-y)
 export KBUILD_SUBDIR_CCFLAGS := $(KBUILD_SUBDIR_CCFLAGS) $(subdir-ccflags-y)
+export KBUILD_SUBDIR_CXXFLAGS := $(KBUILD_SUBDIR_CXXFLAGS) $(subdir-cxxflags-y)
 
 # Figure out what we need to build from the various variables
 # ===========================================================================
@@ -100,6 +102,9 @@ modname_flags  = $(if $(filter 1,$(words $(modname))),\
 orig_c_flags   = $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS) $(KBUILD_SUBDIR_CCFLAGS) \
                  $(ccflags-y) $(CFLAGS_$(basetarget).o)
 _c_flags       = $(filter-out $(CFLAGS_REMOVE_$(basetarget).o), $(orig_c_flags))
+orig_cxx_flags = $(KBUILD_CPPFLAGS) $(KBUILD_CXXFLAGS) $(KBUILD_SUBDIR_CXXFLAGS) \
+                 $(cxxflags-y) $(CXXFLAGS_$(basetarget).o)
+_cxx_flags     = $(filter-out $(CXXFLAGS_REMOVE_$(basetarget).o), $(orig_cxx_flags))
 orig_a_flags   = $(KBUILD_CPPFLAGS) $(KBUILD_AFLAGS) $(KBUILD_SUBDIR_ASFLAGS) \
                  $(asflags-y) $(AFLAGS_$(basetarget).o)
 _a_flags       = $(filter-out $(AFLAGS_REMOVE_$(basetarget).o), $(orig_a_flags))
@@ -111,9 +116,11 @@ _cpp_flags     = $(KBUILD_CPPFLAGS) $(cppflags-y) $(CPPFLAGS_$(@F))
 # (in this order)
 #
 ifeq ($(CONFIG_GCOV_KERNEL),y)
-_c_flags += $(if $(patsubst n%,, \
+_gcov_flags = $(if $(patsubst n%,, \
 		$(GCOV_PROFILE_$(basetarget).o)$(GCOV_PROFILE)$(CONFIG_GCOV_PROFILE_ALL)), \
 		$(CFLAGS_GCOV))
+_c_flags += $(_gcov_flags)
+_cxx_flags += $(_gcov_flags)
 endif
 
 #
@@ -121,9 +128,11 @@ endif
 # we don't want to check (depends on variables KASAN_SANITIZE_obj.o, KASAN_SANITIZE)
 #
 ifeq ($(CONFIG_KASAN),y)
-_c_flags += $(if $(patsubst n%,, \
+_kasan_flags = $(if $(patsubst n%,, \
 		$(KASAN_SANITIZE_$(basetarget).o)$(KASAN_SANITIZE)y), \
 		$(CFLAGS_KASAN))
+_c_flags += $(_kasan_flags)
+_cxx_flags += $(_kasan_flags)
 endif
 
 # If building the kernel in a separate objtree expand all occurrences
@@ -131,6 +140,7 @@ endif
 
 ifeq ($(KBUILD_SRC),)
 __c_flags	= $(_c_flags)
+__cxx_flags	= $(_cxx_flags)
 __a_flags	= $(_a_flags)
 __cpp_flags     = $(_cpp_flags)
 else
@@ -141,6 +151,8 @@ else
 # FIXME: Replace both with specific CFLAGS* statements in the makefiles
 __c_flags	= $(if $(obj),$(call addtree,-I$(src)) -I$(obj)) \
 		  $(call flags,_c_flags)
+__cxx_flags	= $(if $(obj),$(call addtree,-I$(src)) -I$(obj)) \
+		  $(call flags,_cxx_flags)
 __a_flags	= $(call flags,_a_flags)
 __cpp_flags     = $(call flags,_cpp_flags)
 endif
@@ -148,6 +160,10 @@ endif
 # Modified for U-Boot: LINUXINCLUDE -> UBOOTINCLUDE
 c_flags        = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(UBOOTINCLUDE)     \
 		 $(__c_flags) $(modkern_cflags)                           \
+		 $(basename_flags) $(modname_flags)
+
+cxx_flags      = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(UBOOTINCLUDE)     \
+		 $(__cxx_flags) $(modkern_cxxflags)                           \
 		 $(basename_flags) $(modname_flags)
 
 a_flags        = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(UBOOTINCLUDE)     \

@@ -39,6 +39,8 @@ UBOOTINCLUDE    := \
 
 c_flags := $(KBUILD_CFLAGS) $(KBUILD_CPPFLAGS) $(PLATFORM_CPPFLAGS) \
 					$(UBOOTINCLUDE) $(NOSTDINC_FLAGS)
+cxx_flags := $(KBUILD_CXXFLAGS) $(KBUILD_CPPFLAGS) $(PLATFORM_CPPFLAGS) \
+					$(UBOOTINCLUDE) $(NOSTDINC_FLAGS)
 
 quiet_cmd_autoconf_dep = GEN     $@
       cmd_autoconf_dep = $(CC) -x c -DDO_DEPS_ONLY -M -MP $(c_flags) \
