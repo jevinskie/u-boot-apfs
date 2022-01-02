@@ -201,9 +201,9 @@ static inline u32 dev_get_flags(const struct udevice *dev)
 	return dev->flags_;
 }
 
-static inline void dev_or_flags(struct udevice *dev, u32 or)
+static inline void dev_or_flags(struct udevice *dev, u32 or_flags)
 {
-	dev->flags_ |= or;
+	dev->flags_ |= or_flags;
 }
 
 static inline void dev_bic_flags(struct udevice *dev, u32 bic)
