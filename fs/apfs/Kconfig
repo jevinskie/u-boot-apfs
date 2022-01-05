@@ -1,0 +1,4 @@
+config FS_APFS
+	bool "Enable APFS filesystem support"
+	help
+	  This provides support for reading images from Apple's APFS.

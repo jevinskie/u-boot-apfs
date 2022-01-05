@@ -2341,4 +2341,10 @@ config CMD_UBIFS
 	help
 	  UBIFS is a file system for flash devices which works on top of UBI.
 
+config CMD_APFS
+	bool "APFS command support"
+	select FS_APFS
+	help
+	  Support for the APFS fs
+
 endmenu

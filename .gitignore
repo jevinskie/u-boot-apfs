@@ -95,3 +95,6 @@ GTAGS
 
 # Python cache
 __pycache__
+
+# jevmachopp / apfs
+build/
