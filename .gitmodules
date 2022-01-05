@@ -1,0 +1,3 @@
+[submodule "3rdparty/jevmachopp"]
+	path = 3rdparty/jevmachopp
+	url = git@git.je.vin:jevin/jevmachopp.git
