@@ -100,6 +100,9 @@ static const struct {
 	{"swap",	PARTITION_LINUX_SWAP_GUID},
 	{"lvm",		PARTITION_LINUX_LVM_GUID},
 	{"u-boot-env",	PARTITION_U_BOOT_ENVIRONMENT},
+	{"apfs",	PARTITION_APPLE_APFS_GUID},
+	{"apfs-preboot",	PARTITION_APPLE_APFS_PREBOOT_GUID},
+	{"apfs-recovery",	PARTITION_APPLE_APFS_RECOVERY_GUID},
 };
 
 /*
