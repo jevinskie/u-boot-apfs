@@ -429,6 +429,24 @@ KBUILD_CXXFLAGS := -Wall -Wstrict-prototypes \
 		   -Wno-format-security \
 		   $(CXXSTD_FLAG)
 KBUILD_CXXFLAGS	+= -fshort-wchar -fno-strict-aliasing
+KBUILD_CXXFLAGS += \
+	-I 3rdparty/jevmachopp/include \
+	-I 3rdparty/jevmachopp/3rdparty/fmt/include \
+	-I 3rdparty/jevmachopp/3rdparty/hedley \
+	-I 3rdparty/jevmachopp/3rdparty/callable_traits/include \
+	-I 3rdparty/jevmachopp/3rdparty/static_string/include \
+	-I 3rdparty/jevmachopp/3rdparty/static_vector/include \
+	-I 3rdparty/jevmachopp/3rdparty/enum.hpp/headers \
+	-I 3rdparty/jevmachopp/3rdparty/nanorange/include \
+	-I 3rdparty/jevmachopp/3rdparty/uleb128/include \
+	-I 3rdparty/jevmachopp/3rdparty/visit/include \
+	-I 3rdparty/jevmachopp/3rdparty/apfs-fuse-embedded/3rdparty/expected/src \
+	-I 3rdparty/jevmachopp/3rdparty/apfs-fuse-embedded/3rdparty/miniz \
+	-I build/jevmachopp/apfs/miniz \
+	-I 3rdparty/jevmachopp/3rdparty/apfs-fuse-embedded/3rdparty/lzfse/src \
+	-I 3rdparty/jevmachopp/3rdparty/apfs-fuse-embedded/3rdparty/bzip2 \
+	-I build/jevmachopp/apfs/bzip2
+KBUILD_CXXFLAGS += -fno-exceptions
 KBUILD_AFLAGS   := -D__ASSEMBLY__
 KBUILD_LDFLAGS  :=
 

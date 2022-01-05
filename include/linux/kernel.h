@@ -7,13 +7,13 @@
 #define USHRT_MAX	((u16)(~0U))
 #define SHRT_MAX	((s16)(USHRT_MAX>>1))
 #define SHRT_MIN	((s16)(-SHRT_MAX - 1))
-#define INT_MAX		((int)(~0U>>1))
+#define INT_MAX		__INT_MAX__
 #define INT_MIN		(-INT_MAX - 1)
 #define UINT_MAX	(~0U)
-#define LONG_MAX	((long)(~0UL>>1))
+#define LONG_MAX	__LONG_MAX__
 #define LONG_MIN	(-LONG_MAX - 1)
 #define ULONG_MAX	(~0UL)
-#define LLONG_MAX	((long long)(~0ULL>>1))
+#define LLONG_MAX	__LONG_LONG_MAX__
 #define LLONG_MIN	(-LLONG_MAX - 1)
 #define ULLONG_MAX	(~0ULL)
 #ifndef SIZE_MAX
@@ -212,7 +212,9 @@
  * This macro does strict typechecking of lo/hi to make sure they are of the
  * same type as val.  See the unnecessary pointer comparisons.
  */
+#ifndef __cplusplus
 #define clamp(val, lo, hi) min((typeof(val))max(val, lo), hi)
+#endif
 
 /*
  * ..and if you can't take the strict
@@ -259,8 +261,10 @@
 /*
  * swap - swap value of @a and @b
  */
+#ifndef __cplusplus
 #define swap(a, b) \
 	do { typeof(a) __tmp = (a); (a) = (b); (b) = __tmp; } while (0)
+#endif
 
 /**
  * container_of - cast a member of a structure out to the containing structure
