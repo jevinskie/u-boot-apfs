@@ -270,4 +270,10 @@
  */
 #define __weak                          __attribute__((__weak__))
 
+#ifdef __cplusplus
+// #undef inline
+// #undef __always_inline
+// #undef __gnu_inline
+#endif
+
 #endif /* __LINUX_COMPILER_ATTRIBUTES_H */

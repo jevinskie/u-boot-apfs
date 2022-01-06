@@ -5,3 +5,7 @@
  *
  * U-Boot uses linux types (linux/types.h) so does not make use of stdint.h
  */
+
+#ifdef __cplusplus
+#include_next <stdint.h>
+#endif

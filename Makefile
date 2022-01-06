@@ -432,7 +432,6 @@ KBUILD_CXXFLAGS	+= -fshort-wchar -fno-strict-aliasing
 KBUILD_CXXFLAGS += \
 	-I 3rdparty/jevmachopp/include \
 	-I 3rdparty/jevmachopp/3rdparty/fmt/include \
-	-I 3rdparty/jevmachopp/3rdparty/hedley \
 	-I 3rdparty/jevmachopp/3rdparty/callable_traits/include \
 	-I 3rdparty/jevmachopp/3rdparty/static_string/include \
 	-I 3rdparty/jevmachopp/3rdparty/static_vector/include \
@@ -440,6 +439,7 @@ KBUILD_CXXFLAGS += \
 	-I 3rdparty/jevmachopp/3rdparty/nanorange/include \
 	-I 3rdparty/jevmachopp/3rdparty/uleb128/include \
 	-I 3rdparty/jevmachopp/3rdparty/visit/include \
+	-I 3rdparty/jevmachopp/3rdparty/apfs-fuse-embedded \
 	-I 3rdparty/jevmachopp/3rdparty/apfs-fuse-embedded/3rdparty/expected/src \
 	-I 3rdparty/jevmachopp/3rdparty/apfs-fuse-embedded/3rdparty/miniz \
 	-I build/jevmachopp/apfs/miniz \
@@ -485,7 +485,7 @@ export MAKE LEX YACC AWK PERL PYTHON PYTHON2 PYTHON3
 export HOSTCXX KBUILD_HOSTCXXFLAGS CHECK CHECKFLAGS DTC DTC_FLAGS
 
 export KBUILD_CPPFLAGS NOSTDINC_FLAGS UBOOTINCLUDE OBJCOPYFLAGS KBUILD_LDFLAGS
-export KBUILD_CFLAGS KBUILD_AFLAGS KBUILD_CXXFLAGS
+export KBUILD_CFLAGS KBUILD_AFLAGS KBUILD_CXXFLAGS UBOOTINCLUDE_CXX
 
 export CC_VERSION_TEXT := $(shell $(CC) --version | head -n 1)
 
@@ -778,6 +778,9 @@ UBOOTINCLUDE    := \
 			-I$(srctree)/arch/arm/thumb1/include)) \
 	-I$(srctree)/arch/$(ARCH)/include \
 	-include $(srctree)/include/linux/kconfig.h
+
+UBOOTINCLUDE_CXX := $(filter-out -Iinclude,$(UBOOTINCLUDE))
+UBOOTINCLUDE_CXX := -include include/linux/types.h $(UBOOTINCLUDE_CXX) -idirafter include
 
 NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
 

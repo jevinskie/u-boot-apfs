@@ -4,11 +4,6 @@
  * Jevin Sweval, jevinsweval@gmail.com.
  */
 
-extern "C" {
-#include <common.h>
-#include <command.h>
-}
-
 #include <cassert>
 #include <cstdint>
 #include <cstdio>
@@ -26,6 +21,11 @@ extern "C" {
 #include <ApfsLib/Device.h>
 #include <ApfsLib/DeviceUBoot.h>
 #include <ApfsLib/GptPartitionMap.h>
+
+extern "C" {
+#include <common.h>
+#include <command.h>
+}
 
 unsigned long fake_block_read(struct blk_desc *block_dev, lbaint_t start, lbaint_t blkcnt,
                               void *buffer);

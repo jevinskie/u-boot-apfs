@@ -162,7 +162,7 @@ c_flags        = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(UBOOTINCLUDE)     \
 		 $(__c_flags) $(modkern_cflags)                           \
 		 $(basename_flags) $(modname_flags)
 
-cxx_flags      = -Wp,-MD,$(depfile) $(UBOOTINCLUDE)                       \
+cxx_flags      = -Wp,-MD,$(depfile) $(UBOOTINCLUDE_CXX)                   \
 		 $(__cxx_flags) $(modkern_cxxflags)                           \
 		 $(basename_flags) $(modname_flags)
 

@@ -37,10 +37,13 @@ UBOOTINCLUDE    := \
 		-I$(srctree)/arch/$(ARCH)/include \
 		-include $(srctree)/include/linux/kconfig.h
 
+UBOOTINCLUDE_CXX := $(filter-out -Iinclude,$(UBOOTINCLUDE))
+UBOOTINCLUDE_CXX := $(UBOOTINCLUDE_CXX) -idirafter include
+
 c_flags := $(KBUILD_CFLAGS) $(KBUILD_CPPFLAGS) $(PLATFORM_CPPFLAGS) \
 					$(UBOOTINCLUDE) $(NOSTDINC_FLAGS)
 cxx_flags := $(KBUILD_CXXFLAGS) $(KBUILD_CPPFLAGS) $(PLATFORM_CPPFLAGS) \
-					$(UBOOTINCLUDE) $(NOSTDINC_FLAGS)
+					$(UBOOTINCLUDE_CXX) $(NOSTDINC_FLAGS)
 
 quiet_cmd_autoconf_dep = GEN     $@
       cmd_autoconf_dep = $(CC) -x c -DDO_DEPS_ONLY -M -MP $(c_flags) \
