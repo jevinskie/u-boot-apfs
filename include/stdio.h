@@ -1,10 +1,6 @@
 #ifndef __STDIO_H
 #define __STDIO_H
 
-#ifdef __cplusplus
-#include_next <stdio.h>
-#else
-
 #include <stdarg.h>
 #include <linux/compiler.h>
 
@@ -59,7 +55,5 @@ void fputs(int file, const char *s);
 void fputc(int file, const char c);
 int ftstc(int file);
 int fgetc(int file);
-
-#endif /* __cplusplus */
 
 #endif /* __STDIO_H */
