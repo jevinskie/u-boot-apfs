@@ -4,6 +4,8 @@
  * Jevin Sweval, jevinsweval@gmail.com.
  */
 
+#include <jevmachopp/UBootCompat.h>
+
 #include <cassert>
 #include <cstdint>
 #include <cstdio>

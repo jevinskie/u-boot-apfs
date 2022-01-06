@@ -431,21 +431,23 @@ KBUILD_CXXFLAGS := -Wall -Wstrict-prototypes \
 KBUILD_CXXFLAGS	+= -fshort-wchar -fno-strict-aliasing
 KBUILD_CXXFLAGS += \
 	-I 3rdparty/jevmachopp/include \
-	-I 3rdparty/jevmachopp/3rdparty/fmt/include \
-	-I 3rdparty/jevmachopp/3rdparty/callable_traits/include \
-	-I 3rdparty/jevmachopp/3rdparty/static_string/include \
-	-I 3rdparty/jevmachopp/3rdparty/static_vector/include \
-	-I 3rdparty/jevmachopp/3rdparty/enum.hpp/headers \
-	-I 3rdparty/jevmachopp/3rdparty/nanorange/include \
-	-I 3rdparty/jevmachopp/3rdparty/uleb128/include \
-	-I 3rdparty/jevmachopp/3rdparty/visit/include \
-	-I 3rdparty/jevmachopp/3rdparty/apfs-fuse-embedded \
-	-I 3rdparty/jevmachopp/3rdparty/apfs-fuse-embedded/3rdparty/expected/src \
-	-I 3rdparty/jevmachopp/3rdparty/apfs-fuse-embedded/3rdparty/miniz \
+	$(addprefix -I 3rdparty/jevmachopp/3rdparty, \
+		fmt/include
+		callable_traits/include
+		static_string/include
+		enum.hpp/headers
+		nanorange/include
+		uleb128/include
+		visit/include
+		apfs-fuse-embedded
+		apfs-fuse-embedded/3rdparty/expected/src
+		apfs-fuse-embedded/3rdparty/miniz
+		apfs-fuse-embedded/3rdparty/lzfse/src
+		apfs-fuse-embedded/3rdparty/bzip2
+	) \
 	-I build/jevmachopp/apfs/miniz \
-	-I 3rdparty/jevmachopp/3rdparty/apfs-fuse-embedded/3rdparty/lzfse/src \
-	-I 3rdparty/jevmachopp/3rdparty/apfs-fuse-embedded/3rdparty/bzip2 \
 	-I build/jevmachopp/apfs/bzip2
+KBUILD_CFLAGS += -include 3rdparty/jevmachopp/include/UBootCompat.h
 KBUILD_CXXFLAGS += -fno-exceptions
 KBUILD_AFLAGS   := -D__ASSEMBLY__
 KBUILD_LDFLAGS  :=
@@ -779,8 +781,9 @@ UBOOTINCLUDE    := \
 	-I$(srctree)/arch/$(ARCH)/include \
 	-include $(srctree)/include/linux/kconfig.h
 
-UBOOTINCLUDE_CXX := $(filter-out -Iinclude,$(UBOOTINCLUDE))
-UBOOTINCLUDE_CXX := -include include/linux/types.h $(UBOOTINCLUDE_CXX) -idirafter include
+UBOOTINCLUDE_CXX := $(UBOOTINCLUDE)
+# UBOOTINCLUDE_CXX := $(filter-out -Iinclude,$(UBOOTINCLUDE))
+# UBOOTINCLUDE_CXX := -include include/linux/types.h $(UBOOTINCLUDE_CXX) -idirafter include
 
 NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
 
