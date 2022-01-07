@@ -7,6 +7,8 @@ PLATFORM_CPPFLAGS += -fPIC
 PLATFORM_LIBS += -lrt
 SDL_CONFIG ?= sdl2-config
 
+PLATFORM_CXXFLAGS += -iquote /usr/include
+
 # Define this to avoid linking with SDL, which requires SDL libraries
 # This can solve 'sdl-config: Command not found' errors
 ifneq ($(NO_SDL),)

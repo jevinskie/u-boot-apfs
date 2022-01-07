@@ -65,7 +65,9 @@
  *   gcc: https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-always_005finline-function-attribute
  * clang: mentioned
  */
+#ifndef __always_inline
 #define __always_inline                 inline __attribute__((__always_inline__))
+#endif
 
 /*
  * The second argument is optional (default 0), so we use a variadic macro
@@ -100,7 +102,9 @@
  *
  *   gcc: https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-const-function-attribute
  */
+#ifndef __attribute_const__
 #define __attribute_const__             __attribute__((__const__))
+#endif
 
 /*
  * Optional: only supported since gcc >= 9

@@ -431,23 +431,23 @@ KBUILD_CXXFLAGS := -Wall -Wstrict-prototypes \
 KBUILD_CXXFLAGS	+= -fshort-wchar -fno-strict-aliasing
 KBUILD_CXXFLAGS += \
 	-I 3rdparty/jevmachopp/include \
-	$(addprefix -I 3rdparty/jevmachopp/3rdparty, \
-		fmt/include
-		callable_traits/include
-		static_string/include
-		enum.hpp/headers
-		nanorange/include
-		uleb128/include
-		visit/include
-		apfs-fuse-embedded
-		apfs-fuse-embedded/3rdparty/expected/src
-		apfs-fuse-embedded/3rdparty/miniz
-		apfs-fuse-embedded/3rdparty/lzfse/src
-		apfs-fuse-embedded/3rdparty/bzip2
+	$(addprefix -I 3rdparty/jevmachopp/3rdparty/, \
+		fmt/include \
+		callable_traits/include \
+		static_string/include \
+		enum.hpp/headers \
+		nanorange/include \
+		uleb128/include \
+		visit/include \
+		apfs-fuse-embedded \
+		apfs-fuse-embedded/3rdparty/expected/src \
+		apfs-fuse-embedded/3rdparty/miniz \
+		apfs-fuse-embedded/3rdparty/lzfse/src \
+		apfs-fuse-embedded/3rdparty/bzip2 \
 	) \
 	-I build/jevmachopp/apfs/miniz \
 	-I build/jevmachopp/apfs/bzip2
-KBUILD_CFLAGS += -include 3rdparty/jevmachopp/include/UBootCompat.h
+KBUILD_CXXFLAGS += -include 3rdparty/jevmachopp/include/jevmachopp/UBootCompat.h
 KBUILD_CXXFLAGS += -fno-exceptions
 KBUILD_AFLAGS   := -D__ASSEMBLY__
 KBUILD_LDFLAGS  :=
@@ -758,6 +758,8 @@ endif
 # Prohibit date/time macros, which would make the build non-deterministic
 KBUILD_CFLAGS   += $(call cc-option,-Werror=date-time)
 
+KBUILD_CXXFLAGS += $(call cxx-disable-warning, gnu-inline-cpp-without-extern)
+
 include scripts/Makefile.extrawarn
 
 # Add user supplied CPPFLAGS, AFLAGS and CFLAGS as the last assignments
@@ -791,7 +793,7 @@ NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
 cpp_flags := $(KBUILD_CPPFLAGS) $(PLATFORM_CPPFLAGS) $(UBOOTINCLUDE) \
 							$(NOSTDINC_FLAGS)
 c_flags := $(KBUILD_CFLAGS) $(cpp_flags)
-cxx_flags := $(KBUILD_CXXFLAGS) $(cpp_flags)
+cxx_flags := $(KBUILD_CXXFLAGS) $(cpp_flags) $(PLATFORM_CXXFLAGS)
 
 
 #########################################################################

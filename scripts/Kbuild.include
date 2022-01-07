@@ -145,6 +145,12 @@ cc-option-yn = $(call try-run,\
 cc-disable-warning = $(call try-run,\
 	$(CC) -Werror $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS) -W$(strip $(1)) -c -x c /dev/null -o "$$TMP",-Wno-$(strip $(1)))
 
+# cxx-disable-warning
+# Usage: cxxflags-y += $(call cxx-disable-warning, gnu-inline-cpp-without-extern)
+cxx-disable-warning = $(call try-run,\
+	$(CXX) -Werror $(KBUILD_CPPFLAGS) $(KBUILD_CXXFLAGS) -W$(strip $(1)) -c -x c /dev/null -o "$$TMP",-Wno-$(strip $(1)))
+
+
 # cc-name
 # Expands to either gcc or clang
 cc-name = $(shell $(CC) -v 2>&1 | grep -q "clang version" && echo clang || echo gcc)
