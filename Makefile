@@ -447,7 +447,7 @@ KBUILD_CXXFLAGS += \
 	) \
 	-I build/jevmachopp/apfs/miniz \
 	-I build/jevmachopp/apfs/bzip2
-KBUILD_CXXFLAGS += -include 3rdparty/jevmachopp/include/jevmachopp/UBootCompat.h
+# KBUILD_CXXFLAGS += -include 3rdparty/jevmachopp/include/jevmachopp/UBootCompat.h
 KBUILD_CXXFLAGS += -fno-exceptions
 KBUILD_AFLAGS   := -D__ASSEMBLY__
 KBUILD_LDFLAGS  :=

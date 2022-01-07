@@ -148,7 +148,7 @@ cc-disable-warning = $(call try-run,\
 # cxx-disable-warning
 # Usage: cxxflags-y += $(call cxx-disable-warning, gnu-inline-cpp-without-extern)
 cxx-disable-warning = $(call try-run,\
-	$(CXX) -Werror $(KBUILD_CPPFLAGS) $(KBUILD_CXXFLAGS) -W$(strip $(1)) -c -x c /dev/null -o "$$TMP",-Wno-$(strip $(1)))
+	$(CXX) -Werror $(KBUILD_CPPFLAGS) $(KBUILD_CXXFLAGS) -W$(strip $(1)) -c -x c++ /dev/null -o "$$TMP",-Wno-$(strip $(1)))
 
 
 # cc-name
