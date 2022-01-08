@@ -18,7 +18,8 @@ PLATFORM_LIBS += $(shell $(SDL_CONFIG) --libs)
 PLATFORM_CPPFLAGS += $(shell $(SDL_CONFIG) --cflags)
 endif
 
-cmd_u-boot__ = $(CXX) -o $@ -Wl,-T u-boot.lds $(u-boot-init) \
+cmd_u-boot__ = $(CXX) $(KBUILD_LDFLAGS) $(LDFLAGS_u-boot) \
+	-o $@ -Wl,-T u-boot.lds $(u-boot-init) \
 	-Wl,--start-group $(u-boot-main) -Wl,--end-group \
 	$(u-boot-apfs) \
 	$(PLATFORM_LIBS) -Wl,-Map -Wl,u-boot.map

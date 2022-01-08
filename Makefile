@@ -454,6 +454,11 @@ KBUILD_LDFLAGS  :=
 # WHY BROKEN?
 # KBUILD_LDFLAGS  += -lstdc++
 
+KBUILD_CFLAGS += -fsanitize=address
+KBUILD_CXXFLAGS += -fsanitize=address
+LDFLAGS_u-boot += -fsanitize=address
+LDFLAGS_u-boot += /usr/lib/llvm-13/lib/clang/13.0.1/lib/linux/libclang_rt.asan-aarch64.a
+
 ifeq ($(cc-name),clang)
 ifneq ($(CROSS_COMPILE),)
 CLANG_TARGET	:= --target=$(notdir $(CROSS_COMPILE:%-=%))
@@ -871,7 +876,7 @@ ifeq ($(CONFIG_FS_APFS),y)
 u-boot-apfs := build/jevmachopp/apfs/libapfs.a build/jevmachopp/apfs/miniz/libminiz.a build/jevmachopp/apfs/lzfse/liblzfse.a build/jevmachopp/apfs/bzip2/libbz2.a
 KBUILD_CFLAGS += -O0 -g
 KBUILD_CXXFLAGS += -O0 -g
-KBUILD_LDFLAGS_u-boot += -lstdc++ -g -O0
+LDFLAGS_u-boot += -lstdc++ -g -O0
 else
 u-boot-apfs :=
 endif
@@ -1019,7 +1024,9 @@ INPUTS-$(CONFIG_X86) += u-boot-x86-start16.bin u-boot-x86-reset16.bin \
 LDFLAGS_u-boot += $(LDFLAGS_FINAL)
 
 # Avoid 'Not enough room for program headers' error on binutils 2.28 onwards.
+ifndef CONFIG_SANDBOX
 LDFLAGS_u-boot += $(call ld-option, --no-dynamic-linker)
+endif
 
 ifeq ($(CONFIG_ARC)$(CONFIG_NIOS2)$(CONFIG_X86)$(CONFIG_XTENSA),)
 LDFLAGS_u-boot += -Ttext $(CONFIG_SYS_TEXT_BASE)
