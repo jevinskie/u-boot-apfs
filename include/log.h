@@ -275,9 +275,11 @@ void __assert_fail(const char *assertion, const char *file, unsigned int line,
  *
  * @x:		expression to test
  */
+#ifndef assert
 #define assert(x) \
 	({ if (!(x) && _DEBUG) \
 		__assert_fail(#x, __FILE__, __LINE__, __func__); })
+#endif
 
 /*
  * This one actually gets compiled in even without DEBUG. It doesn't include the

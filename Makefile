@@ -451,6 +451,8 @@ KBUILD_CXXFLAGS += \
 KBUILD_CXXFLAGS += -fno-exceptions
 KBUILD_AFLAGS   := -D__ASSEMBLY__
 KBUILD_LDFLAGS  :=
+# WHY BROKEN?
+# KBUILD_LDFLAGS  += -lstdc++
 
 ifeq ($(cc-name),clang)
 ifneq ($(CROSS_COMPILE),)
@@ -867,6 +869,7 @@ u-boot-main := $(libs-y)
 
 ifeq ($(CONFIG_FS_APFS),y)
 u-boot-apfs := build/jevmachopp/apfs/libapfs.a build/jevmachopp/apfs/miniz/libminiz.a build/jevmachopp/apfs/lzfse/liblzfse.a build/jevmachopp/apfs/bzip2/libbz2.a
+KBUILD_LDFLAGS_u-boot += -lstdc++
 else
 u-boot-apfs :=
 endif
@@ -1795,8 +1798,8 @@ ARCH_POSTLINK := $(wildcard $(srctree)/arch/$(ARCH)/Makefile.postlink)
 
 # Rule to link u-boot
 # May be overridden by arch/$(ARCH)/config.mk
-quiet_cmd_u-boot__ ?= LD      $@
-      cmd_u-boot__ ?= $(LD) $(KBUILD_LDFLAGS) $(LDFLAGS_u-boot) -o $@ \
+quiet_cmd_u-boot__ ?= LD (CXX) $@
+      cmd_u-boot__ ?= $(CXX) $(KBUILD_LDFLAGS) $(LDFLAGS_u-boot) -o $@ \
       -T u-boot.lds $(u-boot-init)                             \
       --start-group $(u-boot-main) --end-group                 \
       $(u-boot-apfs)                                           \

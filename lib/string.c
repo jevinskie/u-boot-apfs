@@ -222,12 +222,12 @@ int strncmp(const char * cs,const char * ct,size_t count)
  * @s: The string to be searched
  * @c: The character to search for
  */
-char * strchr(const char * s, int c)
+const char * strchr(const char * s, int c)
 {
 	for(; *s != (char) c; ++s)
 		if (*s == '\0')
 			return NULL;
-	return (char *) s;
+	return (const char *) s;
 }
 #endif
 
@@ -382,14 +382,14 @@ size_t strspn(const char *s, const char *accept)
  * @cs: The string to be searched
  * @ct: The characters to search for
  */
-char * strpbrk(const char * cs,const char * ct)
+const char * strpbrk(const char * cs,const char * ct)
 {
 	const char *sc1,*sc2;
 
 	for( sc1 = cs; *sc1 != '\0'; ++sc1) {
 		for( sc2 = ct; *sc2 != '\0'; ++sc2) {
 			if (*sc1 == *sc2)
-				return (char *) sc1;
+				return (const char *) sc1;
 		}
 	}
 	return NULL;

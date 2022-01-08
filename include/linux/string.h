@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 extern char * ___strtok;
-extern char * strpbrk(const char *,const char *);
+extern const char * strpbrk(const char *,const char *);
 extern char * strtok(char *,const char *);
 extern char * strsep(char **,const char *);
 extern __kernel_size_t strspn(const char *,const char *);
@@ -48,7 +48,7 @@ int strcasecmp(const char *s1, const char *s2);
 extern int strncasecmp(const char *s1, const char *s2, __kernel_size_t len);
 #endif
 #ifndef __HAVE_ARCH_STRCHR
-extern char * strchr(const char *,int);
+extern const char * strchr(const char *,int);
 #endif
 
 /**
