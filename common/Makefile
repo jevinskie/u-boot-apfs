@@ -109,7 +109,7 @@ obj-$(CONFIG_ANDROID_AB) += android_ab.o
 obj-$(CONFIG_ANDROID_BOOT_IMAGE) += image-android.o image-android-dt.o
 obj-$(CONFIG_$(SPL_TPL_)OF_LIBFDT) += image-fdt.o
 obj-$(CONFIG_$(SPL_TPL_)FIT_SIGNATURE) += fdt_region.o
-obj-$(CONFIG_$(SPL_TPL_)FIT) += image-fit.o
+obj-$(CONFIG_$(SPL_TPL_)FIT) += image-fit.o common_fit.o
 obj-$(CONFIG_$(SPL_)MULTI_DTB_FIT) += boot_fit.o common_fit.o
 obj-$(CONFIG_$(SPL_TPL_)IMAGE_SIGN_INFO) += image-sig.o
 obj-$(CONFIG_$(SPL_TPL_)FIT_SIGNATURE) += image-fit-sig.o
@@ -117,6 +117,11 @@ obj-$(CONFIG_$(SPL_TPL_)FIT_CIPHER) += image-cipher.o
 obj-$(CONFIG_IO_TRACE) += iotrace.o
 obj-y += memsize.o
 obj-y += stdio.o
+
+
+ifdef $(CONFIG_FIT)
+CFLAGS_image_fit.o += -O1
+endif
 
 obj-$(CONFIG_CMD_ADTIMG) += image-android-dt.o
 

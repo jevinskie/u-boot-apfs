@@ -869,7 +869,9 @@ u-boot-main := $(libs-y)
 
 ifeq ($(CONFIG_FS_APFS),y)
 u-boot-apfs := build/jevmachopp/apfs/libapfs.a build/jevmachopp/apfs/miniz/libminiz.a build/jevmachopp/apfs/lzfse/liblzfse.a build/jevmachopp/apfs/bzip2/libbz2.a
-KBUILD_LDFLAGS_u-boot += -lstdc++
+KBUILD_CFLAGS += -O0 -g
+KBUILD_CXXFLAGS += -O0 -g
+KBUILD_LDFLAGS_u-boot += -lstdc++ -g -O0
 else
 u-boot-apfs :=
 endif
