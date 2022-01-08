@@ -47,9 +47,10 @@ static void nulldev_putc(struct stdio_dev *dev, const char c)
 	/* nulldev is empty! */
 }
 
-static void nulldev_puts(struct stdio_dev *dev, const char *s)
+static int nulldev_puts(struct stdio_dev *dev, const char *s)
 {
 	/* nulldev is empty! */
+	return -1;
 }
 
 static int nulldev_input(struct stdio_dev *dev)
@@ -82,9 +83,10 @@ static void stdio_serial_putc(struct stdio_dev *dev, const char c)
 	serial_putc(c);
 }
 
-static void stdio_serial_puts(struct stdio_dev *dev, const char *s)
+static int stdio_serial_puts(struct stdio_dev *dev, const char *s)
 {
 	serial_puts(s);
+	return 0;
 }
 
 static int stdio_serial_getc(struct stdio_dev *dev)

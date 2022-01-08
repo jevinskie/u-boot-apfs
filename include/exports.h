@@ -30,7 +30,7 @@ unsigned long get_version(void);
 int  getc(void);
 int  tstc(void);
 void putc(const char);
-void puts(const char*);
+int puts(const char*);
 int printf(const char* fmt, ...);
 void install_hdlr(int, interrupt_handler_t, void*);
 void free_hdlr(int);

@@ -99,12 +99,13 @@ static void console_record_putc(const char c)
 		membuff_putbyte((struct membuff *)&gd->console_out, c);
 }
 
-static void console_record_puts(const char *s)
+static int console_record_puts(const char *s)
 {
 	if (!(gd->flags & GD_FLG_RECORD))
-		return;
+		return 0;
 	if  (gd->console_out.start)
 		membuff_put((struct membuff *)&gd->console_out, s, strlen(s));
+	return 0;
 }
 
 static int console_record_getc(void)
@@ -132,8 +133,9 @@ static void console_record_putc(char c)
 {
 }
 
-static void console_record_puts(const char *s)
+static int console_record_puts(const char *s)
 {
+	return -1;
 }
 
 static int console_record_getc(void)
@@ -345,7 +347,7 @@ void console_puts_select_stderr(bool serial_only, const char *s)
 	console_puts_select(stderr, serial_only, s);
 }
 
-static void console_puts(int file, const char *s)
+static int console_puts(int file, const char *s)
 {
 	int i;
 	struct stdio_dev *dev;
@@ -354,6 +356,7 @@ static void console_puts(int file, const char *s)
 		if (dev->puts != NULL)
 			dev->puts(dev, s);
 	}
+	return 0;
 }
 
 #if CONFIG_IS_ENABLED(SYS_CONSOLE_IS_IN_ENV)
@@ -598,10 +601,11 @@ static void pre_console_putc(const char c)
 	unmap_sysmem(buffer);
 }
 
-static void pre_console_puts(const char *s)
+static int pre_console_puts(const char *s)
 {
 	while (*s)
 		pre_console_putc(*s++);
+	return 0;
 }
 
 static void print_pre_console_buffer(int flushpoint)
@@ -679,17 +683,17 @@ void putc(const char c)
 	}
 }
 
-void puts(const char *s)
+int puts(const char *s)
 {
 	if (!gd)
-		return;
+		return -1;
 
 	console_record_puts(s);
 
 	/* sandbox can send characters to stdout before it has a console */
 	if (IS_ENABLED(CONFIG_SANDBOX) && !(gd->flags & GD_FLG_SERIAL_READY)) {
 		os_puts(s);
-		return;
+		return 0;
 	}
 
 	if (IS_ENABLED(CONFIG_DEBUG_UART) && !(gd->flags & GD_FLG_SERIAL_READY)) {
@@ -698,17 +702,17 @@ void puts(const char *s)
 
 			printch(ch);
 		}
-		return;
+		return 0;
 	}
 
 	if (IS_ENABLED(CONFIG_SILENT_CONSOLE) && (gd->flags & GD_FLG_SILENT)) {
 		if (!(gd->flags & GD_FLG_DEVINIT))
 			pre_console_puts(s);
-		return;
+		return 0;
 	}
 
 	if (IS_ENABLED(CONFIG_DISABLE_CONSOLE) && (gd->flags & GD_FLG_DISABLE_CONSOLE))
-		return;
+		return -1;
 
 	if (!gd->have_console)
 		return pre_console_puts(s);
@@ -721,6 +725,8 @@ void puts(const char *s)
 		pre_console_puts(s);
 		serial_puts(s);
 	}
+
+	return 0;
 }
 
 #ifdef CONFIG_CONSOLE_RECORD

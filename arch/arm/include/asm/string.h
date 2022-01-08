@@ -12,7 +12,7 @@
 extern char * strrchr(const char * s, int c);
 
 #undef __HAVE_ARCH_STRCHR
-extern char * strchr(const char * s, int c);
+extern const char * strchr(const char * s, int c);
 
 #if CONFIG_IS_ENABLED(USE_ARCH_MEMCPY)
 #define __HAVE_ARCH_MEMCPY

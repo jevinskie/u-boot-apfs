@@ -14,7 +14,7 @@ int tstc(void);
 	(defined(CONFIG_SPL_BUILD) && !defined(CONFIG_TPL_BUILD) && \
 		defined(CONFIG_SPL_SERIAL_SUPPORT))
 void putc(const char c);
-void puts(const char *s);
+int puts(const char *s);
 int __printf(1, 2) printf(const char *fmt, ...);
 int vprintf(const char *fmt, va_list args);
 #else
@@ -22,8 +22,9 @@ static inline void putc(const char c)
 {
 }
 
-static inline void puts(const char *s)
+static inline int puts(const char *s)
 {
+	return EOF;
 }
 
 static inline int __printf(1, 2) printf(const char *fmt, ...)
