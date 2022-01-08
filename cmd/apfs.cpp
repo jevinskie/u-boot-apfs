@@ -59,6 +59,7 @@ std::unique_ptr<ApfsDir::DirRec> lookupDir(ApfsDir *apfsDir, std::string_view di
 
 int doit() {
     auto dev = Device::OpenDevice("host:0");
+    // assert(dev);
 
     GptPartitionMap gpt;
     assert(gpt.LoadAndVerify(*dev));

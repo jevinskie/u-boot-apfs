@@ -2092,6 +2092,7 @@ CHANGELOG:
 
 # Directories & files removed with 'make clean'
 CLEAN_DIRS  += $(MODVERDIR) \
+			build \
 	       $(foreach d, spl tpl, $(patsubst %,$d/%, \
 			$(filter-out include, $(shell ls -1 $d 2>/dev/null))))
 
