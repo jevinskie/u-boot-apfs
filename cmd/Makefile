@@ -253,3 +253,4 @@ CFLAGS_ethsw.o := -Wno-enum-conversion
 # CXXFLAGS_apfs.o += -Wno-gnu-inline-cpp-without-extern
 # CXXFLAGS_apfs.o := $(filter-out -nostdinc,$(CXXFLAGS_apfs.o))
 # CXXFLAGS_REMOVE_apfs.o += -nostdinc
+CXXFLAGS_apfs.o += -iquote /usr/include

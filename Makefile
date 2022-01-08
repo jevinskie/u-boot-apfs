@@ -454,6 +454,12 @@ KBUILD_LDFLAGS  :=
 # WHY BROKEN?
 # KBUILD_LDFLAGS  += -lstdc++
 
+ifndef CONFIG_SANDBOX
+ifdef CONFIG_FS_APFS
+PLATFORM_CXXFLAGS += -iquote /usr/include
+endif
+endif
+
 # KBUILD_CFLAGS += -fsanitize=address -fsanitize-recover=address
 # KBUILD_CXXFLAGS += -fsanitize=address -fsanitize-recover=address
 # LDFLAGS_u-boot += -fsanitize=address -fsanitize-recover=address
@@ -876,7 +882,7 @@ ifeq ($(CONFIG_FS_APFS),y)
 u-boot-apfs := build/jevmachopp/apfs/libapfs.a build/jevmachopp/apfs/miniz/libminiz.a build/jevmachopp/apfs/lzfse/liblzfse.a build/jevmachopp/apfs/bzip2/libbz2.a
 KBUILD_CFLAGS += -O0 -g
 KBUILD_CXXFLAGS += -O0 -g
-LDFLAGS_u-boot += -lstdc++ -g -O0
+LDFLAGS_u-boot += -lc++ -g -O0
 else
 u-boot-apfs :=
 endif
@@ -1807,8 +1813,8 @@ ARCH_POSTLINK := $(wildcard $(srctree)/arch/$(ARCH)/Makefile.postlink)
 
 # Rule to link u-boot
 # May be overridden by arch/$(ARCH)/config.mk
-quiet_cmd_u-boot__ ?= LD (CXX) $@
-      cmd_u-boot__ ?= $(CXX) $(KBUILD_LDFLAGS) $(LDFLAGS_u-boot) -o $@ \
+quiet_cmd_u-boot__ ?= LD $@
+      cmd_u-boot__ ?= $(LD) $(KBUILD_LDFLAGS) $(LDFLAGS_u-boot) -o $@ \
       -T u-boot.lds $(u-boot-init)                             \
       --start-group $(u-boot-main) --end-group                 \
       $(u-boot-apfs)                                           \

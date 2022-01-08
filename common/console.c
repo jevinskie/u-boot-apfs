@@ -638,7 +638,7 @@ static void print_pre_console_buffer(int flushpoint)
 }
 #else
 static inline void pre_console_putc(const char c) {}
-static inline void pre_console_puts(const char *s) {}
+static inline int pre_console_puts(const char *s) { return -1; }
 static inline void print_pre_console_buffer(int flushpoint) {}
 #endif
 
