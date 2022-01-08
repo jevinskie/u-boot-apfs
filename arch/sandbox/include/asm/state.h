@@ -65,6 +65,7 @@ struct sandbox_mapmem_entry {
 /* The complete state of the test system */
 struct sandbox_state {
 	const char *cmd;		/* Command to execute */
+    const char *cmd_slurp;  /* Command to execute from file */
 	bool interactive;		/* Enable cmdline after execute */
 	bool run_distro_boot;		/* Automatically run distro bootcommands */
 	const char *fdt_fname;		/* Filename of FDT binary */

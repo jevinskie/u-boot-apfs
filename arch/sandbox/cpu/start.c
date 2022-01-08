@@ -136,7 +136,7 @@ int sandbox_main_loop_init(void)
 	struct sandbox_state *state = state_get_current();
 
 	/* Execute command if required */
-	if (state->cmd || state->run_distro_boot) {
+	if (state->cmd || state->cmd_slurp || state->run_distro_boot) {
 		int retval = 0;
 
 		cli_init();
@@ -144,6 +144,14 @@ int sandbox_main_loop_init(void)
 #ifdef CONFIG_CMDLINE
 		if (state->cmd)
 			retval = run_command_list(state->cmd, -1, 0);
+
+		if (state->cmd_slurp) {
+			void *cmd_slurp_buf;
+			int cmd_slurp_buf_sz;
+			retval = os_read_file(state->cmd_slurp, &cmd_slurp_buf, &cmd_slurp_buf_sz);
+			if (!retval)
+				retval = run_command_list(cmd_slurp_buf, -1, 0);
+		}
 
 		if (state->run_distro_boot)
 			retval = cli_simple_run_command("run distro_bootcmd",
@@ -172,6 +180,15 @@ static int sandbox_cmdline_cb_command(struct sandbox_state *state,
 	return 0;
 }
 SANDBOX_CMDLINE_OPT_SHORT(command, 'c', 1, "Execute U-Boot command");
+
+static int sandbox_cmdline_cb_command_slurp(struct sandbox_state *state,
+				      const char *arg)
+{
+	state->cmd_slurp = arg;
+	return 0;
+}
+SANDBOX_CMDLINE_OPT_SHORT(command_slurp, 'f', 1, "Execute U-Boot command slurped from given <file>");
+
 
 static int sandbox_cmdline_cb_fdt(struct sandbox_state *state, const char *arg)
 {
