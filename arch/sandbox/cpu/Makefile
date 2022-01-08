@@ -10,6 +10,8 @@ extra-y	:= start.o os.o
 extra-$(CONFIG_SANDBOX_SDL)	+= sdl.o
 obj-$(CONFIG_SPL_BUILD)	+= spl.o
 obj-$(CONFIG_ETH_SANDBOX_RAW)	+= eth-raw-os.o
+CFLAGS_REMOVE_start.o := -fsanitize=address
+CFLAGS_REMOVE_state.o := -fsanitize=address
 
 # os.c is build in the system environment, so needs standard includes
 # CFLAGS_REMOVE_os.o cannot be used to drop header include path

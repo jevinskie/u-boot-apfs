@@ -454,10 +454,10 @@ KBUILD_LDFLAGS  :=
 # WHY BROKEN?
 # KBUILD_LDFLAGS  += -lstdc++
 
-KBUILD_CFLAGS += -fsanitize=address
-KBUILD_CXXFLAGS += -fsanitize=address
-LDFLAGS_u-boot += -fsanitize=address
-LDFLAGS_u-boot += /usr/lib/llvm-13/lib/clang/13.0.1/lib/linux/libclang_rt.asan-aarch64.a
+# KBUILD_CFLAGS += -fsanitize=address -fsanitize-recover=address
+# KBUILD_CXXFLAGS += -fsanitize=address -fsanitize-recover=address
+# LDFLAGS_u-boot += -fsanitize=address -fsanitize-recover=address
+# LDFLAGS_u-boot += /usr/lib/llvm-13/lib/clang/13.0.1/lib/linux/libclang_rt.asan-aarch64.a
 
 ifeq ($(cc-name),clang)
 ifneq ($(CROSS_COMPILE),)

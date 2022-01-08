@@ -146,11 +146,24 @@ int sandbox_main_loop_init(void)
 			retval = run_command_list(state->cmd, -1, 0);
 
 		if (state->cmd_slurp) {
-			void *cmd_slurp_buf;
+			void *cmd_slurp_buf = NULL;
+			char *cmd_slurp_buf_nulterm = NULL;
 			int cmd_slurp_buf_sz;
 			retval = os_read_file(state->cmd_slurp, &cmd_slurp_buf, &cmd_slurp_buf_sz);
-			if (!retval)
-				retval = run_command_list(cmd_slurp_buf, -1, 0);
+			if (!retval) {
+				cmd_slurp_buf_nulterm = os_malloc(cmd_slurp_buf_sz + 1);
+				if (cmd_slurp_buf_nulterm) {
+					cmd_slurp_buf_nulterm[cmd_slurp_buf_sz] = '\0';
+					memcpy(cmd_slurp_buf_nulterm, cmd_slurp_buf, cmd_slurp_buf_sz);
+					retval = run_command_list(cmd_slurp_buf, -1, 0);
+				} else {
+					retval = -ENOMEM;
+				}
+			}
+			if (cmd_slurp_buf)
+				os_free(cmd_slurp_buf);
+			if (cmd_slurp_buf_nulterm)
+				os_free(cmd_slurp_buf_nulterm);
 		}
 
 		if (state->run_distro_boot)
