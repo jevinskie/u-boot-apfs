@@ -882,7 +882,10 @@ ifeq ($(CONFIG_FS_APFS),y)
 u-boot-apfs := build/jevmachopp/apfs/libapfs.a build/jevmachopp/apfs/miniz/libminiz.a build/jevmachopp/apfs/lzfse/liblzfse.a build/jevmachopp/apfs/bzip2/libbz2.a
 KBUILD_CFLAGS += -O0 -g
 KBUILD_CXXFLAGS += -O0 -g
-LDFLAGS_u-boot += -lc++ -g -O0
+LDFLAGS_u-boot += -g -O0
+ifndef CONFIG_SANDBOX
+
+endif
 else
 u-boot-apfs :=
 endif
