@@ -883,7 +883,7 @@ u-boot-apfs := build/jevmachopp/apfs/miniz/libminiz.a build/jevmachopp/apfs/lzfs
 # u-boot-apfs := build/jevmachopp/libjevmachopp.o
 KBUILD_CFLAGS += -O0 -g
 KBUILD_CXXFLAGS += -O0 -g
-LDFLAGS_u-boot += -g -O0
+LDFLAGS_u-boot += -g
 ifndef CONFIG_SANDBOX
 PLATFORM_LIBS += $(JEV_LIBCXX_PATH) $(JEV_LIBCXXABI_PATH) --start-group $(JEV_LIBC_PATH) $(JEV_LIBGCC_PATH) build/jevmachopp/libjevmachopp.a --end-group
 endif
@@ -1820,8 +1820,8 @@ ARCH_POSTLINK := $(wildcard $(srctree)/arch/$(ARCH)/Makefile.postlink)
 quiet_cmd_u-boot__ ?= LD $@
       cmd_u-boot__ ?= $(LD) $(KBUILD_LDFLAGS) $(LDFLAGS_u-boot) -o $@ \
       -T u-boot.lds $(u-boot-init)                             \
-      --start-group $(u-boot-main) --end-group                 \
-      --start-group $(u-boot-apfs) $(u-boot-apfs-plat-libs) --end-group                 \
+      --start-group $(u-boot-main)                             \
+      $(u-boot-apfs) $(u-boot-apfs-plat-libs) --end-group      \
       $(PLATFORM_LIBS) -Map u-boot.map;                        \
       $(if $(ARCH_POSTLINK), $(MAKE) -f $(ARCH_POSTLINK) $@, true)
 
