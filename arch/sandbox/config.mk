@@ -21,7 +21,7 @@ endif
 cmd_u-boot__ = $(CXX) $(KBUILD_LDFLAGS) $(LDFLAGS_u-boot) \
 	-o $@ -Wl,-T u-boot.lds $(u-boot-init) \
 	-Wl,--start-group $(u-boot-main) -Wl,--end-group \
-	$(u-boot-apfs) \
+	-Wl,--start-group $(u-boot-apfs) $(u-boot-apfs-plat-libs) -Wl,--end-group \
 	$(PLATFORM_LIBS) -Wl,-Map -Wl,u-boot.map
 
 cmd_u-boot-spl = (cd $(obj) && $(CC) -o $(SPL_BIN) -Wl,-T u-boot-spl.lds \
