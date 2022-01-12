@@ -879,13 +879,13 @@ u-boot-init := $(head-y)
 u-boot-main := $(libs-y)
 
 ifeq ($(CONFIG_FS_APFS),y)
-u-boot-apfs := build/jevmachopp/apfs/miniz/libminiz.a build/jevmachopp/apfs/lzfse/liblzfse.a build/jevmachopp/apfs/bzip2/libbz2.a build/jevmachopp/apfs/libapfs.a build/jevmachopp/uleb128/libuleb128.a build/jevmachopp/libjevmachopp.a
-# u-boot-apfs := build/jevmachopp/libjevmachopp.o
+# u-boot-apfs := build/jevmachopp/apfs/miniz/libminiz.a build/jevmachopp/apfs/lzfse/liblzfse.a build/jevmachopp/apfs/bzip2/libbz2.a build/jevmachopp/apfs/libapfs.a build/jevmachopp/uleb128/libuleb128.a build/jevmachopp/libjevmachopp.a
+u-boot-apfs := build/jevmachopp/libjevmachopp.o
 KBUILD_CFLAGS += -O0 -g
 KBUILD_CXXFLAGS += -O0 -g
 LDFLAGS_u-boot += -g
 ifndef CONFIG_SANDBOX
-PLATFORM_LIBS += $(JEV_LIBCXX_PATH) $(JEV_LIBCXXABI_PATH) --start-group $(JEV_LIBC_PATH) $(JEV_LIBGCC_PATH) build/jevmachopp/libjevmachopp.a --end-group
+# PLATFORM_LIBS += $(JEV_LIBCXX_PATH) $(JEV_LIBCXXABI_PATH) --start-group $(JEV_LIBC_PATH) $(JEV_LIBGCC_PATH) build/jevmachopp/libjevmachopp.a --end-group
 endif
 else
 u-boot-apfs :=
