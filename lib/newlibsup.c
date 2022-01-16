@@ -18,3 +18,8 @@ int newlib2uboot_printf(const char * __restrict fmt, ...) {
     va_end(args);
     return res;
 }
+
+__attribute__((naked))
+void newlib2uboot_panic(const char * __restrict fmt, ...) {
+    asm volatile ("b panic\n\t");
+}
