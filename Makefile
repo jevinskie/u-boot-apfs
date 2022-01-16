@@ -879,13 +879,16 @@ u-boot-init := $(head-y)
 u-boot-main := $(libs-y)
 
 ifeq ($(CONFIG_FS_APFS),y)
-# u-boot-apfs := build/jevmachopp/apfs/miniz/libminiz.a build/jevmachopp/apfs/lzfse/liblzfse.a build/jevmachopp/apfs/bzip2/libbz2.a build/jevmachopp/apfs/libapfs.a build/jevmachopp/uleb128/libuleb128.a build/jevmachopp/libjevmachopp.a
-u-boot-apfs := build/jevmachopp/libjevmachopp.o
+-include 3rdparty/jevmachopp/Makefile
+
+u-boot-apfs := build/jevmachopp/apfs/miniz/libminiz.a build/jevmachopp/apfs/lzfse/liblzfse.a build/jevmachopp/apfs/bzip2/libbz2.a build/jevmachopp/apfs/libapfs.a build/jevmachopp/uleb128/libuleb128.a build/jevmachopp/libjevmachopp.a
+# u-boot-apfs := build/jevmachopp/libjevmachopp.o
 KBUILD_CFLAGS += -O0 -g
 KBUILD_CXXFLAGS += -O0 -g
 LDFLAGS_u-boot += -g
 ifndef CONFIG_SANDBOX
 # PLATFORM_LIBS += $(JEV_LIBCXX_PATH) $(JEV_LIBCXXABI_PATH) --start-group $(JEV_LIBC_PATH) $(JEV_LIBGCC_PATH) build/jevmachopp/libjevmachopp.a --end-group
+u-boot-apfs := $(u-boot-apfs) $(JEV_LIBCXX_PATH) $(JEV_LIBCXXABI_PATH) $(JEV_LIBC_PATH) $(JEV_LIBGCC_PATH)
 endif
 else
 u-boot-apfs :=
@@ -1820,8 +1823,8 @@ ARCH_POSTLINK := $(wildcard $(srctree)/arch/$(ARCH)/Makefile.postlink)
 quiet_cmd_u-boot__ ?= LD $@
       cmd_u-boot__ ?= $(LD) $(KBUILD_LDFLAGS) $(LDFLAGS_u-boot) -o $@ \
       -T u-boot.lds $(u-boot-init)                             \
-      --start-group $(u-boot-main)                             \
-      $(u-boot-apfs) $(u-boot-apfs-plat-libs) --end-group      \
+      --start-group $(u-boot-main) --end-group                 \
+      --start-group $(u-boot-apfs) $(u-boot-apfs-plat-libs) --end-group \
       $(PLATFORM_LIBS) -Map u-boot.map;                        \
       $(if $(ARCH_POSTLINK), $(MAKE) -f $(ARCH_POSTLINK) $@, true)
 
@@ -2365,5 +2368,3 @@ FORCE:
 # Declare the contents of the PHONY variable as phony.  We keep that
 # information in a variable so we can use it in if_changed and friends.
 .PHONY: $(PHONY)
-
--include 3rdparty/jevmachopp/Makefile
