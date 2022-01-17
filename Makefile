@@ -881,8 +881,8 @@ u-boot-main := $(libs-y)
 ifeq ($(CONFIG_FS_APFS),y)
 -include 3rdparty/jevmachopp/Makefile
 
-u-boot-apfs := build/jevmachopp/apfs/miniz/libminiz.a build/jevmachopp/apfs/lzfse/liblzfse.a build/jevmachopp/apfs/bzip2/libbz2.a build/jevmachopp/apfs/libapfs.a build/jevmachopp/uleb128/libuleb128.a build/jevmachopp/libjevmachopp.a
-# u-boot-apfs := build/jevmachopp/libjevmachopp.o
+# u-boot-apfs := build/jevmachopp/apfs/miniz/libminiz.a build/jevmachopp/apfs/lzfse/liblzfse.a build/jevmachopp/apfs/bzip2/libbz2.a build/jevmachopp/apfs/libapfs.a build/jevmachopp/uleb128/libuleb128.a build/jevmachopp/libjevmachopp.a
+u-boot-apfs := build/jevmachopp/libjevmachopp.o
 KBUILD_CFLAGS += -O0 -g
 KBUILD_CXXFLAGS += -O0 -g
 LDFLAGS_u-boot += -g
