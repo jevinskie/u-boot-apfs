@@ -64,7 +64,7 @@ class UBootRelocate(gdb.Command):
 UBootRelocate()
 
 class UBootUnslide(gdb.Command):
-    """Set up GDB to handle U-Boot relocating itself"""
+    """Unslide a relocated address and get its info"""
 
     def __init__(self):
         super().__init__("uboot-unslide", gdb.COMMAND_USER)
@@ -79,19 +79,4 @@ class UBootUnslide(gdb.Command):
         gdb.execute(f"info symbol {hex(orig_addr)}")
 
 UBootUnslide()
-
-class AddSymFileSmartELF(gdb.Command):
-    """Set up GDB to handle U-Boot relocating itself"""
-
-    def __init__(self):
-        super().__init__("add-symbol-file-smart-elf", gdb.COMMAND_USER)
-
-    def invoke(self, arg, from_tty):
-        x18 = uboot_gdp()
-        if x18:
-            uboot_add_relocated_syms()
-        else:
-            UBootRelocateBP('relocate_done', gdb.BP_BREAKPOINT, gdb.WP_WRITE, True, True)
-
-UBootRelocate()
 
