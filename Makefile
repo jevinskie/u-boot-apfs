@@ -888,7 +888,7 @@ KBUILD_CXXFLAGS += -O0 -g
 LDFLAGS_u-boot += -g
 ifndef CONFIG_SANDBOX
 # PLATFORM_LIBS += $(JEV_LIBCXX_PATH) $(JEV_LIBCXXABI_PATH) --start-group $(JEV_LIBC_PATH) $(JEV_LIBGCC_PATH) build/jevmachopp/libjevmachopp.a --end-group
-u-boot-apfs := $(u-boot-apfs) $(JEV_LIBCXX_PATH) $(JEV_LIBCXXABI_PATH) $(JEV_LIBC_PATH) $(JEV_LIBGCC_PATH)
+u-boot-apfs := $(u-boot-apfs)
 endif
 else
 u-boot-apfs :=

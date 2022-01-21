@@ -806,6 +806,10 @@ int printf(const char *fmt, ...)
 	return i;
 }
 
+#if CONFIG_IS_ENABLED(FS_APFS)
+extern __typeof(printf) olibc2uboot_printf __attribute__((alias("printf")));
+#endif
+
 int vprintf(const char *fmt, va_list args)
 {
 	uint i;

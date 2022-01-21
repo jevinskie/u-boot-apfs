@@ -133,7 +133,7 @@ endif
 obj-y += date.o
 obj-$(CONFIG_LIB_ELF) += elf.o
 
-obj-$(CONFIG_FS_APFS) += newlibsup.o
+obj-$(CONFIG_FS_APFS) += olibcsup.o
 
 #
 # Build a fast OID lookup registry from include/linux/oid_registry.h

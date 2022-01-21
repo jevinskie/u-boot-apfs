@@ -48,6 +48,10 @@ void panic(const char *fmt, ...)
 	panic_finish();
 }
 
+#if CONFIG_IS_ENABLED(FS_APFS)
+extern __typeof(panic) olibc2uboot_panic __attribute__((alias("panic")));
+#endif
+
 void __assert_fail(const char *assertion, const char *file, unsigned int line,
 		   const char *function)
 {
