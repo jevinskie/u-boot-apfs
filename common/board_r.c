@@ -589,6 +589,10 @@ static int run_main_loop(void)
 	return 0;
 }
 
+#ifdef CONFIG_FS_APFS
+extern int __libc_start_embcust(void);
+#endif
+
 /*
  * We hope to remove most of the driver-related init and do it if/when
  * the driver is later used.
@@ -797,6 +801,9 @@ static init_fnc_t init_sequence_r[] = {
 #endif
 #ifdef CONFIG_EFI_SETUP_EARLY
 	(init_fnc_t)efi_init_obj_list,
+#endif
+#ifdef CONFIG_FS_APFS
+	__libc_start_embcust,
 #endif
 	run_main_loop,
 };

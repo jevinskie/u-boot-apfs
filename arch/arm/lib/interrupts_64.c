@@ -51,13 +51,13 @@ void show_regs(struct pt_regs *regs)
 	int i;
 
 	if (gd->flags & GD_FLG_RELOC)
-		printf("elr: %016lx lr : %016lx (reloc)\n",
+		printf("elr: 0x%016lx lr : 0x%016lx (reloc)\n",
 		       regs->elr - gd->reloc_off,
 		       regs->regs[30] - gd->reloc_off);
-	printf("elr: %016lx lr : %016lx\n", regs->elr, regs->regs[30]);
+	printf("elr: 0x%016lx lr : 0x%016lx\n", regs->elr, regs->regs[30]);
 
 	for (i = 0; i < 29; i += 2)
-		printf("x%-2d: %016lx x%-2d: %016lx\n",
+		printf("x%-2d: 0x%016lx x%-2d: 0x%016lx\n",
 		       i, regs->regs[i], i+1, regs->regs[i+1]);
 	printf("\n");
 	dump_instr(regs);

@@ -59,3 +59,7 @@ void __assert_fail(const char *assertion, const char *file, unsigned int line,
 	panic("%s:%u: %s: Assertion `%s' failed.", file, line, function,
 	      assertion);
 }
+
+#if CONFIG_IS_ENABLED(FS_APFS)
+extern __typeof(__assert_fail) olibc2uboot_assert __attribute__((alias("__assert_fail")));
+#endif
