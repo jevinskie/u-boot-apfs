@@ -305,6 +305,25 @@ static struct fstype_info fstypes[] = {
 		.mkdir = fs_mkdir_unsupported,
 	},
 #endif
+#if IS_ENABLED(CONFIG_FS_APFS)
+	{
+		.fstype = FS_TYPE_APFS,
+		.name = "apfs",
+		.null_dev_desc_ok = false,
+		.probe = fs_probe_unsupported,
+		.close = fs_close_unsupported,
+		.ls = fs_ls_unsupported,
+		.exists = fs_exists_unsupported,
+		.size = fs_size_unsupported,
+		.read = fs_read_unsupported,
+		.write = fs_write_unsupported,
+		.uuid = fs_uuid_unsupported,
+		.opendir = fs_opendir_unsupported,
+		.unlink = fs_unlink_unsupported,
+		.mkdir = fs_mkdir_unsupported,
+		.ln = fs_ln_unsupported,
+	},
+#endif
 	{
 		.fstype = FS_TYPE_ANY,
 		.name = "unsupported",

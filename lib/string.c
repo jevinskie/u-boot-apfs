@@ -222,12 +222,12 @@ int strncmp(const char * cs,const char * ct,size_t count)
  * @s: The string to be searched
  * @c: The character to search for
  */
-const char * strchr(const char * s, int c)
+char * strchr(const char * s, int c)
 {
 	for(; *s != (char) c; ++s)
 		if (*s == '\0')
 			return NULL;
-	return (const char *) s;
+	return (char *)s;
 }
 #endif
 
@@ -382,14 +382,14 @@ size_t strspn(const char *s, const char *accept)
  * @cs: The string to be searched
  * @ct: The characters to search for
  */
-const char * strpbrk(const char * cs,const char * ct)
+char * strpbrk(const char * cs,const char * ct)
 {
 	const char *sc1,*sc2;
 
 	for( sc1 = cs; *sc1 != '\0'; ++sc1) {
 		for( sc2 = ct; *sc2 != '\0'; ++sc2) {
 			if (*sc1 == *sc2)
-				return (const char *) sc1;
+				return (char *) sc1;
 		}
 	}
 	return NULL;
@@ -641,18 +641,18 @@ void * memscan(void * addr, int c, size_t size)
  * @s1: The string to be searched
  * @s2: The string to search for
  */
-const char * strstr(const char * s1,const char * s2)
+char * strstr(const char * s1,const char * s2)
 {
 	int l1, l2;
 
 	l2 = strlen(s2);
 	if (!l2)
-		return (const char *) s1;
+		return (char *) s1;
 	l1 = strlen(s1);
 	while (l1 >= l2) {
 		l1--;
 		if (!memcmp(s1,s2,l2))
-			return (const char *) s1;
+			return (char *) s1;
 		s1++;
 	}
 	return NULL;

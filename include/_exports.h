@@ -11,7 +11,7 @@
 	EXPORT_FUNC(getchar, int, getc, void)
 	EXPORT_FUNC(tstc, int, tstc, void)
 	EXPORT_FUNC(putc, void, putc, const char)
-	EXPORT_FUNC(puts, void, puts, const char *)
+	EXPORT_FUNC(puts, int, puts, const char *)
 	EXPORT_FUNC(printf, int, printf, const char*, ...)
 #if (defined(CONFIG_X86) && !defined(CONFIG_X86_64)) || defined(CONFIG_PPC)
 	EXPORT_FUNC(irq_install_handler, void, install_hdlr,
