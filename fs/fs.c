@@ -26,6 +26,7 @@
 #include <linux/math64.h>
 #include <efi_loader.h>
 #include <squashfs.h>
+#include <apfs.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -310,15 +311,17 @@ static struct fstype_info fstypes[] = {
 		.fstype = FS_TYPE_APFS,
 		.name = "apfs",
 		.null_dev_desc_ok = false,
-		.probe = fs_probe_unsupported,
-		.close = fs_close_unsupported,
-		.ls = fs_ls_unsupported,
-		.exists = fs_exists_unsupported,
-		.size = fs_size_unsupported,
-		.read = fs_read_unsupported,
+		.probe = apfs_probe,
+		.ls = apfs_ls,
+		.exists = apfs_exists,
+		.size = apfs_size,
+		.read = apfs_read,
 		.write = fs_write_unsupported,
-		.uuid = fs_uuid_unsupported,
-		.opendir = fs_opendir_unsupported,
+		.close = apfs_close,
+		.uuid = apfs_uuid,
+		.opendir = apfs_opendir,
+		.readdir = apfs_readdir,
+		.closedir = apfs_closedir,
 		.unlink = fs_unlink_unsupported,
 		.mkdir = fs_mkdir_unsupported,
 		.ln = fs_ln_unsupported,

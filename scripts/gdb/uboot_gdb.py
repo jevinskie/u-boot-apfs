@@ -67,7 +67,7 @@ class UBootUnslide(gdb.Command):
     """Unslide a relocated address and get its info"""
 
     def __init__(self):
-        super().__init__("uboot-unslide", gdb.COMMAND_USER)
+        super().__init__("unslide", gdb.COMMAND_USER)
 
     def invoke(self, arg, from_tty):
         x18 = uboot_gdp()
@@ -80,3 +80,31 @@ class UBootUnslide(gdb.Command):
 
 UBootUnslide()
 
+class UBootSlide(gdb.Command):
+    """Slide an un-relocated address and get its info"""
+
+    def __init__(self):
+        super().__init__("slide", gdb.COMMAND_USER)
+
+    def invoke(self, arg, from_tty):
+        x18 = uboot_gdp()
+        orig_addr = gdb.parse_and_eval(f"{arg}")
+        reloc_addr = orig_addr
+        if x18:
+            reloc_addr += uboot_relocaddr()
+        print(f"{hex(orig_addr)} -> {hex(reloc_addr)}")
+        gdb.execute(f"info symbol {hex(reloc_addr)}")
+
+UBootSlide()
+
+class UBootRun(gdb.Command):
+    """Run U-Boot (alias for mon system_reset)"""
+
+    def __init__(self):
+        super().__init__("run", gdb.COMMAND_USER)
+
+    def invoke(self, arg, from_tty):
+        gdb.execute("mon system_reset")
+        gdb.execute("c")
+
+UBootRun()
