@@ -41,6 +41,20 @@ SECTIONS
 		*(.text*)
 	}
 
+    .eh_frame :
+    {
+        __eh_frame_start = .;
+        KEEP(*(.eh_frame))
+        __eh_frame_end = .;
+    }
+
+    .eh_frame_hdr :
+    {
+        __eh_frame_hdr_start = .;
+        KEEP(*(.eh_frame_hdr))
+        __eh_frame_hdr_end = .;
+    }
+
 #ifdef CONFIG_ARMV8_PSCI
 	.__secure_start :
 #ifndef CONFIG_ARMV8_SECURE_BASE
