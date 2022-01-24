@@ -8,7 +8,6 @@ struct fs_dir_stream;
 
 int apfs_probe(struct blk_desc *fs_dev_desc,
          struct disk_partition *fs_partition);
-int apfs_ls(const char *dirname);
 int apfs_exists(const char *filename);
 int apfs_size(const char *filename, loff_t *size);
 int apfs_read(const char *filename, void *buf, loff_t offset,
