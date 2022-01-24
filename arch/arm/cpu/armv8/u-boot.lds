@@ -41,19 +41,26 @@ SECTIONS
 		*(.text*)
 	}
 
-    .eh_frame :
-    {
-        __eh_frame_start = .;
-        KEEP(*(.eh_frame))
-        __eh_frame_end = .;
-    }
+	.eh_frame :
+	{
+		__eh_frame_start = .;
+		KEEP(*(.eh_frame .eh_frame.*))
+		__eh_frame_end = .;
+	}
 
-    .eh_frame_hdr :
-    {
-        __eh_frame_hdr_start = .;
-        KEEP(*(.eh_frame_hdr))
-        __eh_frame_hdr_end = .;
-    }
+	.eh_frame_hdr :
+	{
+		__eh_frame_hdr_start = .;
+		KEEP(*(.eh_frame_hdr .eh_frame_entry .eh_frame_entry.*))
+		__eh_frame_hdr_end = .;
+	}
+
+	.gcc_except_table :
+	{
+		__gcc_except_table_start = .;
+		KEEP(*(.gcc_except_table .gcc_except_table.*))
+		__gcc_except_table_end = .;
+	}
 
 #ifdef CONFIG_ARMV8_PSCI
 	.__secure_start :

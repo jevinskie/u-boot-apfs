@@ -885,7 +885,8 @@ ifeq ($(CONFIG_FS_APFS),y)
 u-boot-apfs := build/jevmachopp/libjevmachopp.o
 KBUILD_CFLAGS += -O0 -g
 KBUILD_CXXFLAGS += -O0 -g
-LDFLAGS_u-boot += -g
+LDFLAGS_u-boot += -g --eh-frame-hdr
+OBJCOPYFLAGS += -j .eh_frame -j .eh_frame_hdr -j .gcc_except_table
 ifndef CONFIG_SANDBOX
 # PLATFORM_LIBS += $(JEV_LIBCXX_PATH) $(JEV_LIBCXXABI_PATH) --start-group $(JEV_LIBC_PATH) $(JEV_LIBGCC_PATH) build/jevmachopp/libjevmachopp.a --end-group
 u-boot-apfs := $(u-boot-apfs)
