@@ -3,6 +3,8 @@
  * Copyright (c) 2019, softathome
  */
 
+#if IMAGE_ENABLE_DECRYPT
+
 #ifndef USE_HOSTCC
 #include <common.h>
 #include <malloc.h>
@@ -39,3 +41,5 @@ int image_aes_decrypt(struct image_cipher_info *info,
 
 	return 0;
 }
+
+#endif /* IMAGE_ENABLE_DECRYPT */

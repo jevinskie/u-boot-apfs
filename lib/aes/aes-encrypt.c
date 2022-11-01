@@ -3,6 +3,8 @@
  * Copyright (c) 2019,Softathome
  */
 
+#if IMAGE_ENABLE_ENCRYPT
+
 #define OPENSSL_API_COMPAT 0x10101000L
 
 #include "mkimage.h"
@@ -151,3 +153,5 @@ done:
 
 	return ret;
 }
+
+#endif /* IMAGE_ENABLE_ENCRYPT */
