@@ -140,7 +140,7 @@ cc-disable-warning = $(call try-run,\
 cc-name = $(shell $(CC) -v 2>&1 | grep -q "clang version" && echo clang || echo gcc)
 
 # cc-version
-cc-version = $(shell $(CONFIG_SHELL) $(srctree)/scripts/gcc-version.sh $(CC))
+cc-version = $(shell export CC_IS_GCC=$(CC_IS_GCC); $(CONFIG_SHELL) $(srctree)/scripts/gcc-version.sh -p $(CC))
 
 # cc-ifversion
 # Usage:  EXTRA_CFLAGS += $(call cc-ifversion, -lt, 0402, -O1)

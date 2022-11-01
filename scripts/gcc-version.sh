@@ -15,6 +15,11 @@ if [ "$1" = "-p" ] ; then
 	shift;
 fi
 
+if (( ${CC_IS_GCC:-0} )); then
+	printf "0\\n"
+	exit 0
+fi
+
 compiler="$*"
 
 if [ ${#compiler} -eq 0 ]; then
@@ -27,7 +32,7 @@ MAJOR=$(echo __GNUC__ | $compiler -E -x c - | tail -n 1)
 MINOR=$(echo __GNUC_MINOR__ | $compiler -E -x c - | tail -n 1)
 if [ "x$with_patchlevel" != "x" ] ; then
 	PATCHLEVEL=$(echo __GNUC_PATCHLEVEL__ | $compiler -E -x c - | tail -n 1)
-	printf "%02d%02d%02d\\n" $MAJOR $MINOR $PATCHLEVEL
+	printf "%d%02d%02d\\n" $MAJOR $MINOR $PATCHLEVEL
 else
-	printf "%02d%02d\\n" $MAJOR $MINOR
+	printf "%d%02d\\n" $MAJOR $MINOR
 fi

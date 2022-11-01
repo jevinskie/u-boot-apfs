@@ -62,10 +62,10 @@ def main():
         check_assigned_sym_values(kconf)
         check_assigned_choice_values(kconf)
 
-    if kconf.syms['WARN_DEPRECATED'].tri_value == 2:
+    if 'WARN_DEPRECATED' in kconf.syms and kconf.syms['WARN_DEPRECATED'].tri_value == 2:
         check_deprecated(kconf)
 
-    if kconf.syms['WARN_EXPERIMENTAL'].tri_value == 2:
+    if 'WARN_EXPERIMENTAL' in kconf.syms and kconf.syms['WARN_EXPERIMENTAL'].tri_value == 2:
         check_experimental(kconf)
 
     # Hack: Force all symbols to be evaluated, to catch warnings generated
